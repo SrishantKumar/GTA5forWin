@@ -115,6 +115,8 @@ typedef int clockid_t;
 extern "C" {
 #endif
 
+#ifndef PG_HAVE_STRCASESTR
+#define PG_HAVE_STRCASESTR
 static inline char *strcasestr(const char *haystack, const char *needle) {
     if (!haystack || !needle) return NULL;
     if (!*needle) return (char *)haystack;
@@ -126,6 +128,7 @@ static inline char *strcasestr(const char *haystack, const char *needle) {
     }
     return NULL;
 }
+#endif
 
 static inline long pg_get_gmtoff(const struct tm *t) {
     long tz = 0;

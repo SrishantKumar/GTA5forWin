@@ -21,7 +21,8 @@
 extern "C" {
 #endif
 
-#ifndef strcasestr
+#ifndef PG_HAVE_STRCASESTR
+#define PG_HAVE_STRCASESTR
 static inline char *strcasestr(const char *haystack, const char *needle) {
     if (!haystack || !needle) return NULL;
     if (!*needle) return (char *)haystack;

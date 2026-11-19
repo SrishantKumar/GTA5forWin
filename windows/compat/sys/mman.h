@@ -66,7 +66,7 @@ static inline int madvise(void *addr, size_t len, int advice) {
     return 0;
 }
 
-static inline int mincore(void *addr, size_t len, unsigned char *vec) {
+static inline int mincore(void *addr, size_t len, char *vec) {
     (void)addr;
     if (vec && len) {
         size_t pages = (len + 4095) / 4096;

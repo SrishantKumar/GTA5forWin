@@ -33,6 +33,17 @@ jobs:
         with:
           cmake-version: '3.28.x'
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate missing includes
+        shell: pwsh
+        run: |
+          # Generates Generated/asi-natives.inc (empty table stub when game_*.c are absent).
+          python app/Scripts/stub_asi_natives.py
+
       - name: Configure CMake
         shell: pwsh
         run: |
