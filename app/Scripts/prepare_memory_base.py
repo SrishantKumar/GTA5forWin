@@ -59,14 +59,13 @@ for name in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h']:
             t = t.replace(anchor, anchor + '#include "NativeRuntime.h"\n', 1)
         elif '#include <string.h>\n' in t:
             t = t.replace('#include <string.h>\n', '#include <string.h>\n#include "NativeRuntime.h"\n', 1)
-    # Remove any wrongly-placed early include (before v128 typedef) that may
-    # have been inserted by a previous run of this script.
-    # We do this by stripping any occurrence that sits before DEFINE_SHARED_LOAD.
-    if t.index('#include "NativeRuntime.h"') < t.index('#include <stdatomic.h>'):
-        t = t.replace('#include "NativeRuntime.h"\n', '', 1)  # remove the early one
-        anchor = '#include <stdatomic.h>\n'
-        if anchor in t and '#include "NativeRuntime.h"' not in t:
-            t = t.replace(anchor, anchor + '#include "NativeRuntime.h"\n', 1)
+    # If NativeRuntime.h ended up before stdatomic (from an old run), move it.
+    # Guard with 'in' before .index() — game-plain-impl.h has no stdatomic.
+    native_pos = t.find('#include "NativeRuntime.h"')
+    atomic_pos = t.find('#include <stdatomic.h>')
+    if native_pos != -1 and atomic_pos != -1 and native_pos < atomic_pos:
+        t = t.replace('#include "NativeRuntime.h"\n', '', 1)
+        t = t.replace('#include <stdatomic.h>\n', '#include <stdatomic.h>\n#include "NativeRuntime.h"\n', 1)
     if t != s: path.write_text(t); helpers += 1
 left = sum(len(re.findall(r'MEM_ADDR\(mem, addr, (?:sizeof\(t[12]\)|16)\)', (root / 'Generated' / n).read_text()))
            for n in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h'] if (root / 'Generated' / n).exists())
