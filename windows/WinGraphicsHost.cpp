@@ -54,8 +54,12 @@ static std::thread gRenderThread;
 // Presentation & Metrics
 static std::atomic<double> gPresentInterval{0.0};
 static std::atomic<double> gFPS{60.0};
+static std::atomic<double> gFrameTimeMs{16.6};
 static uint64_t gFrameCount = 0;
 static std::chrono::high_resolution_clock::time_point gLastFPSTime;
+static std::chrono::high_resolution_clock::time_point gLastPresentTime;
+
+extern "C" void WinUIRenderInGameOverlay(HWND hwnd, ID3D11DeviceContext* context, ID3D11RenderTargetView* rtv);
 
 // D3D11 Resource Wrappers
 struct D3DResource {
@@ -463,14 +467,23 @@ static void ExecuteRingPacket(uint32_t op, const uint32_t *p, uint32_t n) {
 
         case PRESENT: {
             if (gSwapChain) {
+                // In-Game UI Overlay and Performance HUD rendering
+                WinUIRenderInGameOverlay(gHwnd, gContext.Get(), gBackBufferRTV.Get());
+
                 double interval = gPresentInterval.load();
                 UINT sync = interval > 0 ? 1 : 0;
                 gSwapChain->Present(sync, 0);
 
-                gFrameCount++;
                 auto now = std::chrono::high_resolution_clock::now();
+                double frameElapsed = std::chrono::duration<double, std::milli>(now - gLastPresentTime).count();
+                gLastPresentTime = now;
+                if (frameElapsed > 0.0 && frameElapsed < 500.0) {
+                    gFrameTimeMs.store(frameElapsed);
+                }
+
+                gFrameCount++;
                 double elapsed = std::chrono::duration<double>(now - gLastFPSTime).count();
-                if (elapsed >= 1.0) {
+                if (elapsed >= 0.5) {
                     gFPS.store(gFrameCount / elapsed);
                     gFrameCount = 0;
                     gLastFPSTime = now;
@@ -548,5 +561,18 @@ void PGNoteTextureRatio(int64_t, int64_t) {}
 ID3D11Device *PGGetD3D11Device(void) { return gDevice.Get(); }
 ID3D11DeviceContext *PGGetD3D11Context(void) { return gContext.Get(); }
 IDXGISwapChain *PGGetD3D11SwapChain(void) { return gSwapChain.Get(); }
+ID3D11RenderTargetView *PGGetD3D11BackBufferRTV(void) { return gBackBufferRTV.Get(); }
+
+void PGD3D11Present(UINT syncInterval) {
+    if (gSwapChain) {
+        gSwapChain->Present(syncInterval, 0);
+    }
+}
+
+void PGD3D11ClearBackBuffer(const float color[4]) {
+    if (gContext && gBackBufferRTV) {
+        gContext->ClearRenderTargetView(gBackBufferRTV.Get(), color);
+    }
+}
 
 } // extern "C"

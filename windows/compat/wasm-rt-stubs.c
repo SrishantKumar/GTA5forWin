@@ -28,8 +28,15 @@ void wasm_rt_init_thread(void) {}
 void wasm_rt_free_thread(void) {}
 wasm_rt_trap_t wasm_rt_impl_try(void) { return WASM_RT_TRAP_NONE; }
 
+static char gSelectedLanguage[32] = "en-US";
+void PGSetSelectedGameLanguage(const char *lang) {
+  if (lang && *lang) {
+    strncpy(gSelectedLanguage, lang, sizeof(gSelectedLanguage) - 1);
+    gSelectedLanguage[sizeof(gSelectedLanguage) - 1] = '\0';
+  }
+}
 const char *PGSelectedGameLanguage(void) {
-  return "en";
+  return gSelectedLanguage;
 }
 
 uint64_t PGGPUTextureBytes(void) { return 0; }

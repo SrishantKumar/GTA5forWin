@@ -1,4 +1,10 @@
 #pragma once
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <d3d11.h>
 #include <dxgi1_2.h>
@@ -14,6 +20,7 @@ void PGAttachWindow(HWND hwnd);
 void PGAttachMetalLayer(void *layer); // Compatibility alias
 void PGStartGraphics(void *memory, uint64_t memorySize, uint64_t ring, uint64_t ringSize, uint64_t debug);
 double PGRenderedFramesPerSecond(void);
+double PGGPUFrameMilliseconds(void);
 void PGCaptureNativeFrame(const char *name);
 void PGSetSharperUpscaling(int on);
 void PGSetPresentInterval(double seconds);
@@ -30,7 +37,10 @@ void PGNoteTextureRatio(int64_t gpuBytes, int64_t gameBytes);
 ID3D11Device *PGGetD3D11Device(void);
 ID3D11DeviceContext *PGGetD3D11Context(void);
 IDXGISwapChain *PGGetD3D11SwapChain(void);
+ID3D11RenderTargetView *PGGetD3D11BackBufferRTV(void);
 void PGResizeD3D11Buffers(int width, int height);
+void PGD3D11Present(UINT syncInterval);
+void PGD3D11ClearBackBuffer(const float color[4]);
 
 #ifdef __cplusplus
 }

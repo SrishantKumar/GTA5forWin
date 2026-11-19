@@ -1,7 +1,8 @@
 name: Build Windows Executable (GTA5forWin)
 
-# Manual trigger only - will NEVER run automatically on commits or pull requests
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       build_type:

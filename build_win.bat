@@ -27,7 +27,14 @@ if %ERRORLEVEL% neq 0 (
 :vcfound
 
 echo.
-echo [1/2] Configuring CMake for Windows x64...
+echo [1/3] Generating stub includes if needed...
+where python >nul 2>&1
+if %ERRORLEVEL% equ 0 (
+    python app\Scripts\stub_asi_natives.py
+)
+
+echo.
+echo [2/3] Configuring CMake for Windows x64...
 if not exist "build_win" mkdir build_win
 
 cmake -B build_win -S . -DCMAKE_BUILD_TYPE=Release
@@ -37,7 +44,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo [2/2] Compiling GTA5Port.exe (Release)...
+echo [3/3] Compiling GTA5Port.exe (Release)...
 cmake --build build_win --config Release --parallel
 
 if %ERRORLEVEL% neq 0 (

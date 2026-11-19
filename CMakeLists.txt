@@ -27,6 +27,8 @@ endif()
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/windows
     ${CMAKE_CURRENT_SOURCE_DIR}/windows/compat
+    ${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/imgui
+    ${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/imgui/backends
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Source
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Generated
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/wabt-1.0.42/include
@@ -37,6 +39,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Vendor/zstd
 )
 
+# Static MSVC C/C++ Runtime Library (/MT) so no VC++ Redistributable is required on Windows
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # Source files
 set(WINDOWS_SOURCES
     windows/WinMain.cpp
@@ -44,6 +49,13 @@ set(WINDOWS_SOURCES
     windows/WinInput.cpp
     windows/WinAudio.cpp
     windows/WinFiles.cpp
+    windows/WinUI.cpp
+    windows/third_party/imgui/imgui.cpp
+    windows/third_party/imgui/imgui_draw.cpp
+    windows/third_party/imgui/imgui_tables.cpp
+    windows/third_party/imgui/imgui_widgets.cpp
+    windows/third_party/imgui/backends/imgui_impl_win32.cpp
+    windows/third_party/imgui/backends/imgui_impl_dx11.cpp
 )
 
 set(ENGINE_SOURCES
@@ -114,11 +126,14 @@ if(WIN32)
         avrt
         synchronization
         ws2_32
+        dwmapi
+        imm32
     )
 endif()
 
-# MSVC specific flags
+# MSVC specific flags & Static Runtime
 if(MSVC)
+    set_property(TARGET GTA5Port PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     target_compile_options(GTA5Port PRIVATE
         /W3
         /permissive-

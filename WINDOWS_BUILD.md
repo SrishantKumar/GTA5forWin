@@ -91,17 +91,26 @@ YourGameFolder/
 
 ### Launching:
 1. Run `GTA5Port.exe`.
-2. On first launch, a native Windows folder picker dialog will prompt you to select your game directory.
-3. The port verifies `b/8b0b5899ed/game.wasm`, `data/manifest.json`, and shaders, saving your choice to `%APPDATA%\GTA5Port\settings.ini`.
-4. The game starts immediately with native Direct3D 11 rendering and WASAPI audio.
+2. The **Five Star Native Launcher UI** opens immediately with dark mode styling:
+   - **Play / Launch:** Browse or Auto-Detect your GTA V installation (Steam / Epic / Rockstar), check file integrity status, choose game mode (Sandbox / Story / Test), and click **Launch**.
+   - **Graphics & Display:** Select resolution, windowed / borderless fullscreen, FPS caps (Unlocked, 60, 40, 30), VSync, and texture/shader quality.
+   - **Controls & HUD:** Live controller detection, targeting preference, and real-time HUD layout sliders (Minimap, Phone, Character Switch Wheel, Subtitles).
+   - **Mods & Scripts:** Master toggle for Script Hook V `.asi` mods and quick access to the Mods directory.
+   - **Audio & Self Radio:** Master/SFX/Music sliders and custom music scanner.
+   - **Cheats & Vehicle Spawner:** Built-in cheats (God Mode, Never Wanted, Cash, Weather, Time) and full vehicle catalog spawner.
+   - **Diagnostics & Live Logs:** Hardware breakdown, GPU name, and live console log viewer with real-time logging to `GTA5Port.log`.
+3. Settings and game directory path are automatically persisted to `%LOCALAPPDATA%\GTA5Port\config.ini`.
+4. While playing, press **[F1]** or **[Insert]** at any time to open the in-game overlay menu!
 
 ---
 
 ## 5. Controls & Features
 
+- **In-Game Overlay Menu:** Press `F1` or `Insert` while playing to open the overlay menu (Cheats, Vehicle Spawner, Graphics, HUD layout, and Diagnostics) and unlock the mouse cursor.
+- **Performance HUD:** Displays live FPS, GPU frame time (ms), and engine metrics on screen.
 - **Fullscreen:** Press `Alt+Enter` or `F11` to toggle borderless fullscreen.
 - **Mouse & Keyboard:** Raw Input captures the mouse for 360-degree aiming. `WASD` moves, `Space` jumps/handbrakes, `F` enters/exits vehicles, `E` interacts, and scroll wheel selects weapons.
-- **Pause Menu & Cursor Release:** Press `ESC` to toggle the pause menu and release mouse capture.
+- **Pause Menu & Cursor Release:** Press `ESC` to toggle the pause menu or dismiss the in-game overlay.
 - **Xbox / XInput Controllers:** Automatically detected. Left stick moves, right stick aims, `RT`/`LT` triggers fire/aim, and `A`/`B`/`X`/`Y` handle game actions.
 - **Self Radio:** Copy songs (`.mp3`, `.wav`, `.flac`) into `%APPDATA%\GTA5Port\Data\Self Radio`. With 3 or more songs, Self Radio is unlocked in the radio wheel.
 - **Saves:** Stored natively in `%APPDATA%\GTA5Port\Data\userdata\Documents\Rockstar Games\GTA V\`.
@@ -113,8 +122,9 @@ YourGameFolder/
 | Layer | macOS Port (`gta5-macos-port`) | Windows Port (`windows/`) |
 |---|---|---|
 | **Language** | Swift 5 + Obj-C / C | Pure C17 & C++20 |
-| **Windowing** | AppKit / Mac Catalyst (`UIWindow`) | Pure Win32 (`RegisterClassExW`, `CreateWindowExW`) |
+| **Windowing & UI** | SwiftUI + AppKit | Pure Win32 + Dear ImGui (Direct3D 11 swapchain) |
 | **Graphics** | Apple Metal (`MetalGraphicsHost.mm`) | Direct3D 11 (`WinGraphicsHost.cpp`) |
 | **Input** | `GameController.framework` + `MacCursor.swift` | Win32 Raw Input (`WM_INPUT`) + XInput |
 | **Audio** | `AVFAudio` + `AudioToolbox` | Windows WASAPI (`IAudioClient`) |
+| **Runtime Linking** | macOS system dylibs | Static MSVC Runtime (`/MT`) — no VC++ Redistributable needed |
 | **Build System** | XcodeGen (`project.yml`) + Xcode | CMake (`CMakeLists.txt`) + MSVC / Clang |

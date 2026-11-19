@@ -8,9 +8,11 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <shlwapi.h>
+#include <shellapi.h>
 #include <wrl/client.h>
 #include <filesystem>
 #include <fstream>
+#include <vector>
 
 using Microsoft::WRL::ComPtr;
 namespace fs = std::filesystem;
@@ -21,27 +23,70 @@ std::string WinFiles::GetAppDataFolder() {
         fs::path p(path);
         CoTaskMemFree(path);
         p /= "GTA5Port";
-        fs::create_directories(p);
+        std::error_code ec;
+        fs::create_directories(p, ec);
         return p.string();
     }
     return "C:\\GTA5Port";
 }
 
+std::string WinFiles::GetLocalAppDataFolder() {
+    PWSTR path = nullptr;
+    if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &path))) {
+        fs::path p(path);
+        CoTaskMemFree(path);
+        p /= "GTA5Port";
+        std::error_code ec;
+        fs::create_directories(p, ec);
+        return p.string();
+    }
+    return GetAppDataFolder();
+}
+
+std::string WinFiles::GetConfigFilePath() {
+    fs::path p = fs::path(GetLocalAppDataFolder()) / "config.ini";
+    return p.string();
+}
+
 std::string WinFiles::GetDocumentsFolder() {
     fs::path p = fs::path(GetAppDataFolder()) / "Data";
-    fs::create_directories(p);
+    std::error_code ec;
+    fs::create_directories(p, ec);
     return p.string();
+}
+
+std::string WinFiles::GetModsFolder() {
+    fs::path p = fs::path(GetDocumentsFolder()) / "Mods";
+    std::error_code ec;
+    fs::create_directories(p, ec);
+    return p.string();
+}
+
+std::string WinFiles::GetUserMusicFolder() {
+    fs::path p = fs::path(GetDocumentsFolder()) / "Self Radio";
+    std::error_code ec;
+    fs::create_directories(p, ec);
+    return p.string();
+}
+
+void WinFiles::OpenFolderInExplorer(const std::string &path) {
+    if (path.empty()) return;
+    std::error_code ec;
+    if (!fs::exists(path, ec)) {
+        fs::create_directories(path, ec);
+    }
+    ShellExecuteA(nullptr, "open", path.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 void WinFiles::PrepareEnvironment(const std::string &filesRoot) {
     fs::path root(filesRoot);
-    fs::create_directories(root / "userdata" / "Documents" / "Rockstar Games" / "GTA V");
-    fs::create_directories(root / "sandbox" / "Documents" / "Rockstar Games" / "GTA V");
-    fs::create_directories(root / "Self Radio");
-    fs::create_directories(root / "Mods");
+    std::error_code ec;
+    fs::create_directories(root / "userdata" / "Documents" / "Rockstar Games" / "GTA V", ec);
+    fs::create_directories(root / "sandbox" / "Documents" / "Rockstar Games" / "GTA V", ec);
+    fs::create_directories(root / "Self Radio", ec);
+    fs::create_directories(root / "Mods", ec);
 
     // Clean stale graphics settings on start so app graphics options govern (matching NativePortViewController.swift)
-    std::error_code ec;
     fs::remove(root / "userdata" / "Documents" / "Rockstar Games" / "GTA V" / "settings.xml", ec);
     fs::remove(root / "sandbox" / "Documents" / "Rockstar Games" / "GTA V" / "settings.xml", ec);
 }
@@ -54,7 +99,7 @@ bool WinFiles::PromptChooseGameFolder(HWND hwnd, std::string &outPath) {
     FILEOPENDIALOGOPTIONS opt;
     pFileOpen->GetOptions(&opt);
     pFileOpen->SetOptions(opt | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
-    pFileOpen->SetTitle(L"Select Grand Theft Auto V Game Folder (with data/ and b/)");
+    pFileOpen->SetTitle(L"Select Grand Theft Auto V Game Folder");
 
     hr = pFileOpen->Show(hwnd);
     if (FAILED(hr)) return false;
@@ -83,37 +128,116 @@ WinGameFolderReport WinFiles::VerifyGameFolder(const std::string &path) {
     WinGameFolderReport report;
     report.folderPath = path;
 
-    fs::path p(path);
-    if (!fs::exists(p) || !fs::is_directory(p)) {
-        report.errorMessage = "Specified directory does not exist.";
+    if (path.empty()) {
+        report.errorMessage = "No folder selected. Please choose your GTA V game folder.";
         return report;
     }
 
-    report.hasEngine = fs::exists(p / "b" / "8b0b5899ed" / "game.wasm");
-    report.hasManifest = fs::exists(p / "data" / "manifest.json");
-    report.hasShaders = fs::exists(p / "b" / "8b0b5899ed" / "shaders" / "index.json");
+    std::error_code ec;
+    fs::path p(path);
+    if (!fs::exists(p, ec) || !fs::is_directory(p, ec)) {
+        report.errorMessage = "Specified directory does not exist or is inaccessible.";
+        return report;
+    }
 
-    if (!report.hasEngine) {
-        report.errorMessage = "Missing engine file: b/8b0b5899ed/game.wasm";
-    } else if (!report.hasManifest) {
-        report.errorMessage = "Missing manifest file: data/manifest.json";
-    } else if (!report.hasShaders) {
-        report.errorMessage = "Missing shader index: b/8b0b5899ed/shaders/index.json";
-    } else {
+    report.hasEngine = fs::exists(p / "b" / "8b0b5899ed" / "game.wasm", ec);
+    report.hasManifest = fs::exists(p / "data" / "manifest.json", ec);
+    report.hasShaders = fs::exists(p / "b" / "8b0b5899ed" / "shaders" / "index.json", ec);
+    report.hasGta5Exe = fs::exists(p / "GTA5.exe", ec) || fs::exists(p / "PlayGTAV.exe", ec);
+    report.hasCommonRpf = fs::exists(p / "common.rpf", ec);
+    report.hasUpdateRpf = fs::exists(p / "update" / "update.rpf", ec);
+
+    // Count standard RPF archives
+    report.foundRpfCount = 0;
+    const char *rpfNames[] = {
+        "x64a.rpf", "x64b.rpf", "x64c.rpf", "x64d.rpf", "x64e.rpf", "x64f.rpf",
+        "x64g.rpf", "x64h.rpf", "x64i.rpf", "x64j.rpf", "x64k.rpf", "x64l.rpf",
+        "x64m.rpf", "x64n.rpf", "x64o.rpf", "x64p.rpf", "x64q.rpf", "x64r.rpf",
+        "x64s.rpf", "x64t.rpf", "x64u.rpf", "x64v.rpf", "x64w.rpf"
+    };
+    for (const char *name : rpfNames) {
+        if (fs::exists(p / name, ec)) {
+            report.foundRpfCount++;
+        }
+    }
+
+    if (report.hasEngine) report.foundItems.push_back("Engine binary (b/8b0b5899ed/game.wasm)");
+    else report.missingItems.push_back("Engine binary (b/8b0b5899ed/game.wasm)");
+
+    if (report.hasManifest) report.foundItems.push_back("Asset manifest (data/manifest.json)");
+    else report.missingItems.push_back("Asset manifest (data/manifest.json)");
+
+    if (report.hasShaders) report.foundItems.push_back("Shader index (b/8b0b5899ed/shaders/index.json)");
+    else report.missingItems.push_back("Shader index (b/8b0b5899ed/shaders/index.json)");
+
+    if (report.hasGta5Exe) report.foundItems.push_back("Game executable (GTA5.exe)");
+    if (report.hasCommonRpf) report.foundItems.push_back("Common data archive (common.rpf)");
+    if (report.hasUpdateRpf) report.foundItems.push_back("Update package (update/update.rpf)");
+    if (report.foundRpfCount > 0) {
+        report.foundItems.push_back("Base game archives (" + std::to_string(report.foundRpfCount) + "/23 x64*.rpf)");
+    }
+
+    // A valid installation has either the native web engine format OR the PC game archives
+    bool hasNativeWebFiles = report.hasEngine && report.hasManifest && report.hasShaders;
+    bool hasStandardPcFiles = (report.hasGta5Exe || report.hasCommonRpf) && report.foundRpfCount >= 4;
+
+    if (hasNativeWebFiles || hasStandardPcFiles) {
         report.isValid = true;
+        report.errorMessage.clear();
+    } else {
+        report.isValid = false;
+        report.errorMessage = "Missing required game files in directory:\n";
+        for (const auto &item : report.missingItems) {
+            report.errorMessage += " • " + item + "\n";
+        }
     }
 
     return report;
 }
 
+std::string WinFiles::AutoDetectGameFolder() {
+    std::error_code ec;
+    const std::vector<std::string> searchPaths = {
+        "C:\\Program Files\\Rockstar Games\\Grand Theft Auto V",
+        "C:\\Program Files (x86)\\Rockstar Games\\Grand Theft Auto V",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Grand Theft Auto V",
+        "C:\\Program Files\\Steam\\steamapps\\common\\Grand Theft Auto V",
+        "D:\\SteamLibrary\\steamapps\\common\\Grand Theft Auto V",
+        "E:\\SteamLibrary\\steamapps\\common\\Grand Theft Auto V",
+        "F:\\SteamLibrary\\steamapps\\common\\Grand Theft Auto V",
+        "C:\\Program Files\\Epic Games\\GTAV",
+        "D:\\Epic Games\\GTAV",
+        "E:\\Epic Games\\GTAV",
+        ".\\GTA5",
+        "."
+    };
+
+    for (const auto &candidate : searchPaths) {
+        fs::path p(candidate);
+        if (fs::exists(p, ec) && fs::is_directory(p, ec)) {
+            if (fs::exists(p / "GTA5.exe", ec) ||
+                fs::exists(p / "common.rpf", ec) ||
+                fs::exists(p / "data" / "manifest.json", ec)) {
+                return fs::canonical(p, ec).string();
+            }
+        }
+    }
+    return "";
+}
+
 std::string WinFiles::LoadSavedGameFolder() {
-    fs::path iniPath = fs::path(GetAppDataFolder()) / "settings.ini";
+    std::string configPath = GetConfigFilePath();
     char buffer[MAX_PATH] = {};
-    GetPrivateProfileStringA("Game", "Folder", "", buffer, MAX_PATH, iniPath.string().c_str());
+    GetPrivateProfileStringA("Launcher", "GameFolder", "", buffer, MAX_PATH, configPath.c_str());
+    if (buffer[0] != '\0') return std::string(buffer);
+
+    // Fallback to old settings.ini in AppData Roaming
+    fs::path oldIni = fs::path(GetAppDataFolder()) / "settings.ini";
+    GetPrivateProfileStringA("Game", "Folder", "", buffer, MAX_PATH, oldIni.string().c_str());
     return std::string(buffer);
 }
 
 void WinFiles::SaveGameFolder(const std::string &path) {
-    fs::path iniPath = fs::path(GetAppDataFolder()) / "settings.ini";
-    WritePrivateProfileStringA("Game", "Folder", path.c_str(), iniPath.string().c_str());
+    std::string configPath = GetConfigFilePath();
+    WritePrivateProfileStringA("Launcher", "GameFolder", path.c_str(), configPath.c_str());
 }

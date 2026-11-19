@@ -6,6 +6,7 @@
 #endif
 #include <windows.h>
 #include <shellscalingapi.h>
+#include <dwmapi.h>
 #include <thread>
 #include <chrono>
 #include <string>
@@ -16,9 +17,11 @@
 #include "WinInput.h"
 #include "WinAudio.h"
 #include "WinFiles.h"
+#include "WinUI.h"
 #include "../app/Source/EngineHost.h"
 
 extern "C" void pg_log(const char *message);
+extern "C" void PGSetSelectedGameLanguage(const char *lang);
 
 namespace fs = std::filesystem;
 
@@ -27,9 +30,20 @@ static bool gIsFullscreen = false;
 static WINDOWPLACEMENT gPrevPlacement = { sizeof(gPrevPlacement) };
 
 static void EngineLogCallback(const char *message, void *) {
-    OutputDebugStringA(message);
-    OutputDebugStringA("\n");
-    printf("[GTA5 Engine] %s\n", message);
+    WinUI::Log(message, 3);
+}
+
+static void EnableDarkModeTitleBar(HWND hwnd) {
+    BOOL useDarkMode = TRUE;
+    #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+    #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+    #endif
+    #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1
+    #define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 19
+    #endif
+    if (FAILED(DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode)))) {
+        DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, &useDarkMode, sizeof(useDarkMode));
+    }
 }
 
 static void ToggleFullscreen(HWND hwnd) {
@@ -57,6 +71,12 @@ static void ToggleFullscreen(HWND hwnd) {
 }
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    // 1. Process message through ImGui UI layer first
+    if (WinUI::ProcessMessage(hwnd, uMsg, wParam, lParam)) {
+        return 0;
+    }
+
+    // 2. Process message through Game Input layer
     if (WinInputProcessMessage(hwnd, uMsg, wParam, lParam)) {
         return 0;
     }
@@ -89,12 +109,80 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         }
 
         case WM_DESTROY: {
+            WinUI::Shutdown();
             WinAudioShutdown();
             PostQuitMessage(0);
             return 0;
         }
     }
     return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+}
+
+static void OnLaunchGame(const WinUIConfig& config) {
+    WinUI::Log("Starting Grand Theft Auto V Engine initialization...");
+
+    // Format graphics configuration options
+    char optShader[64], optTex[64], optShadow[64], optRefl[64], optLod[64];
+    snprintf(optShader, sizeof(optShader), "-shaderQuality=%d", config.shaderQuality);
+    snprintf(optTex, sizeof(optTex), "-textureQuality=%d", config.textureQuality);
+    snprintf(optShadow, sizeof(optShadow), "-shadowQuality=%d", config.shadowQuality);
+    snprintf(optRefl, sizeof(optRefl), "-reflectionQuality=%d", config.reflectionQuality);
+    snprintf(optLod, sizeof(optLod), "-lodScale=%.2f", config.lodScale);
+
+    const char* qualityArgs[] = { optShader, optTex, optShadow, optRefl, optLod };
+    int width = 1280;
+    int height = 720;
+    switch (config.resolutionPreset) {
+        case 0: width = 1280; height = 720; break;
+        case 1: width = 1600; height = 900; break;
+        case 2: width = 1920; height = 1080; break;
+        case 3: width = 2560; height = 1440; break;
+    }
+
+    PGConfigureEngine(qualityArgs, 5, width, height, config.frameLimit);
+
+    if (config.memoryCapMB > 0) {
+        PGSetMemoryCap(config.memoryCapMB);
+    }
+
+    PGSetStartMode(config.startMode);
+    PGSetModsOff(!config.modsEnabled);
+    PGSetSelfRadioMode(config.selfRadioMode);
+
+    // Apply HUD layout
+    PGSetMinimapLayout(config.minimapDX, config.minimapDY, config.minimapScale);
+    PGSetHelpTextLayout(config.helpTextX, config.helpTextY, config.helpTextScale);
+    PGSetHudPiece(0, config.wheelDX, config.wheelDY, config.wheelScale);
+    PGSetHudPiece(1, config.phoneDX, config.phoneDY, config.phoneScale);
+    PGSetHudPiece(2, config.feedDX, config.feedDY, config.feedScale);
+    PGSetSubtitleRaise(config.subtitleRaise);
+
+    // Set locale
+    PGSetSelectedGameLanguage(WinUI::GetCurrentLanguageCode());
+
+    // Configure game directories
+    PGSetLocalGameFolder(config.gameFolder.c_str());
+
+    std::string manifestPath = (fs::path(config.gameFolder) / "data" / "manifest.json").string();
+    std::string documentsRoot = WinFiles::GetDocumentsFolder();
+
+    // Prepare User Music if any
+    PGUserMusicPrepare(WinFiles::GetUserMusicFolder().c_str(), documentsRoot.c_str());
+
+    // Spawn Engine Host on background thread
+    std::thread engineThread([manifestPath, documentsRoot]() {
+        WinUI::Log("Engine host thread launched.");
+        PGStartEngine(manifestPath.c_str(), documentsRoot.c_str(), EngineLogCallback, nullptr);
+    });
+    engineThread.detach();
+
+    WinUI::SetGameRunning(true);
+    WinUI::SetOverlayOpen(false);
+
+    // Lock cursor for game input
+    WinInputSetCursorLock(gMainWindow, true);
+
+    WinUI::Log("Game launched successfully. Press [F1] to toggle in-game settings and cheats overlay.");
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
@@ -119,16 +207,27 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     }
 
     int defaultWidth = 1280;
-    int defaultHeight = 720;
+    int defaultHeight = 800;
 
     RECT rc = { 0, 0, defaultWidth, defaultHeight };
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
+    int winWidth = rc.right - rc.left;
+    int winHeight = rc.bottom - rc.top;
+
+    // Center window on primary monitor
+    int screenW = GetSystemMetrics(SM_CXSCREEN);
+    int screenH = GetSystemMetrics(SM_CYSCREEN);
+    int posX = (screenW - winWidth) / 2;
+    int posY = (screenH - winHeight) / 2;
+    if (posX < 0) posX = CW_USEDEFAULT;
+    if (posY < 0) posY = CW_USEDEFAULT;
+
     HWND hwnd = CreateWindowExW(
-        0, CLASS_NAME, L"Grand Theft Auto V — Windows Native Port (Direct3D 11) | Port by Srishant Kumar (github.com/srishantkumar)",
+        0, CLASS_NAME, L"Grand Theft Auto V — Windows Native Port (Direct3D 11) | Port by Srishant Kumar",
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        rc.right - rc.left, rc.bottom - rc.top,
+        posX, posY,
+        winWidth, winHeight,
         nullptr, nullptr, hInstance, nullptr
     );
 
@@ -138,23 +237,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     }
     gMainWindow = hwnd;
 
-    // Load or prompt for game folder
-    std::string gameFolder = WinFiles::LoadSavedGameFolder();
-    WinGameFolderReport report = WinFiles::VerifyGameFolder(gameFolder);
-
-    if (!report.isValid) {
-        std::string chosen;
-        if (WinFiles::PromptChooseGameFolder(hwnd, chosen)) {
-            report = WinFiles::VerifyGameFolder(chosen);
-            if (report.isValid) {
-                gameFolder = chosen;
-                WinFiles::SaveGameFolder(gameFolder);
-            } else {
-                std::string err = "Selected folder is missing required game files:\n" + report.errorMessage;
-                MessageBoxA(hwnd, err.c_str(), "GTA V Port — Incomplete Game Files", MB_ICONWARNING);
-            }
-        }
-    }
+    // Enable Sleek Dark Mode Title Bar on Windows 10/11
+    EnableDarkModeTitleBar(hwnd);
 
     // Initialize Subsystems
     WinFiles::PrepareEnvironment(WinFiles::GetDocumentsFolder());
@@ -163,33 +247,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     PGAttachWindow(hwnd);
     WinAudioStart();
 
-    pg_log("======================================================================");
-    pg_log("  Grand Theft Auto V — Windows Native Port (Direct3D 11)");
-    pg_log("  Port by Srishant Kumar (https://github.com/srishantkumar)");
-    pg_log("======================================================================");
+    // Initialize ImGui Native UI layer
+    WinUI::Init(hwnd, PGGetD3D11Device(), PGGetD3D11Context());
+    WinUI::SetLaunchCallback(OnLaunchGame);
+
+    WinUI::Log("======================================================================");
+    WinUI::Log("  Grand Theft Auto V — Windows Native Port (Direct3D 11)");
+    WinUI::Log("  Port by Srishant Kumar (https://github.com/srishantkumar)");
+    WinUI::Log("======================================================================");
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
 
-    // Configure and start engine
-    if (report.isValid) {
-        const char *quality[] = {
-            "-shaderQuality=1", "-textureQuality=1", "-shadowQuality=1",
-            "-reflectionQuality=1", "-lodScale=1.0"
-        };
-        PGConfigureEngine(quality, 5, defaultWidth, defaultHeight, 0); // 0 = unlocked frame rate
-        PGSetStartMode(2); // 2 = Sandbox / Story launch
-        PGSetLocalGameFolder(gameFolder.c_str());
-
-        std::string manifestPath = (fs::path(gameFolder) / "data" / "manifest.json").string();
-        std::string documentsRoot = WinFiles::GetDocumentsFolder();
-
-        PGStartEngine(manifestPath.c_str(), documentsRoot.c_str(), EngineLogCallback, nullptr);
-    } else {
-        pg_log("Running in preflight mode without game files. Direct3D 11 and audio initialized.");
-    }
-
-    // Main Game Loop
+    // Main Loop
     MSG msg = {};
     auto lastFrameTime = std::chrono::high_resolution_clock::now();
 
@@ -198,17 +268,25 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         } else {
-            auto currentFrameTime = std::chrono::high_resolution_clock::now();
-            double deltaSec = std::chrono::duration<double>(currentFrameTime - lastFrameTime).count();
-            lastFrameTime = currentFrameTime;
+            if (!WinUI::IsGameRunning()) {
+                // In Launcher Mode: Render Five Star Port Launcher UI
+                WinUI::RenderLauncherFrame(hwnd, PGGetD3D11Context(), PGGetD3D11BackBufferRTV(), PGGetD3D11SwapChain());
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            } else {
+                // In Game Mode: Poll input
+                auto currentFrameTime = std::chrono::high_resolution_clock::now();
+                double deltaSec = std::chrono::duration<double>(currentFrameTime - lastFrameTime).count();
+                lastFrameTime = currentFrameTime;
 
-            WinInputPoll(deltaSec);
+                WinInputPoll(deltaSec);
 
-            // Yield slightly to prevent 100% spin if waiting on D3D11 present
-            std::this_thread::sleep_for(std::chrono::microseconds(500));
+                // Yield slightly
+                std::this_thread::sleep_for(std::chrono::microseconds(500));
+            }
         }
     }
 
+    WinUI::Shutdown();
     CoUninitialize();
     return (int)msg.wParam;
 }

@@ -5,6 +5,7 @@
 #define NOMINMAX
 #endif
 #include "WinInput.h"
+#include "WinUI.h"
 #include "../app/Source/EngineHost.h"
 #include <windows.h>
 #include <windowsx.h>
@@ -74,7 +75,9 @@ bool WinInputProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case WM_LBUTTONUP: {
             bool down = (uMsg == WM_LBUTTONDOWN);
             if (down) gMouseButtons |= 1; else gMouseButtons &= ~1;
-            if (!gCursorLocked && down) WinInputSetCursorLock(hwnd, true);
+            if (WinUIIsGameRunning() && !WinUIIsOverlayOpen()) {
+                if (!gCursorLocked && down) WinInputSetCursorLock(hwnd, true);
+            }
             return true;
         }
 
@@ -103,12 +106,29 @@ bool WinInputProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             bool down = (uMsg == WM_KEYDOWN);
             uint8_t vk = (uint8_t)wParam;
 
-            if (vk == VK_ESCAPE && down) {
-                if (gCursorLocked) {
+            // Toggle In-Game Overlay via F1 or INSERT
+            if ((vk == VK_F1 || vk == VK_INSERT) && down) {
+                WinUIToggleOverlay();
+                if (WinUIIsOverlayOpen()) {
                     WinInputSetCursorLock(hwnd, false);
-                } else {
+                } else if (WinUIIsGameRunning()) {
                     WinInputSetCursorLock(hwnd, true);
                 }
+                return true;
+            }
+
+            if (vk == VK_ESCAPE && down) {
+                if (WinUIIsOverlayOpen()) {
+                    WinUISetOverlayOpen(false);
+                    if (WinUIIsGameRunning()) WinInputSetCursorLock(hwnd, true);
+                    return true;
+                }
+                if (gCursorLocked) {
+                    WinInputSetCursorLock(hwnd, false);
+                } else if (WinUIIsGameRunning()) {
+                    WinInputSetCursorLock(hwnd, true);
+                }
+                return true;
             }
 
             PGSetKey(vk, down);
