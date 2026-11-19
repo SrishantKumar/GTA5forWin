@@ -1,4 +1,5 @@
 #include "wasm-rt.h"
+#include "game.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -150,14 +151,16 @@ uint64_t w2c_game_fn_vehicle_seats(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_weapon_entity(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_zstd_decompress_stream(void *inst, ...) { (void)inst; return 0; }
 
-uint32_t w2c_env_0x5F_syscall_accept4(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_connect(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_getsockname(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_getsockopt(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_poll(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_recvfrom(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_sendto(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_setsockopt(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_shutdown(void *h, ...) { (void)h; return (uint32_t)-1; }
-uint32_t w2c_env_0x5F_syscall_socket(void *h, ...) { (void)h; return (uint32_t)-1; }
-void w2c_game_0x5Femscripten_run_js_on_main_thread_done(void *inst, ...) { (void)inst; }
+// Network syscall stubs — signatures must match game.h declarations exactly.
+// All return ENOSYS (-1 as u32) since networking is not supported on Windows.
+u32 w2c_env_0x5F_syscall_accept4(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_connect(struct w2c_env *h, u32 a, u64 b, u32 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_getsockname(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_getsockopt(struct w2c_env *h, u32 a, u32 b, u32 c, u64 d, u64 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_poll(struct w2c_env *h, u64 a, u32 b, u32 c) { (void)h;(void)a;(void)b;(void)c; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_recvfrom(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u64 e, u64 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_sendto(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u64 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_setsockopt(struct w2c_env *h, u32 a, u32 b, u32 c, u64 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_shutdown(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+u32 w2c_env_0x5F_syscall_socket(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+// w2c_game_0x5Femscripten_run_js_on_main_thread_done is a static inline in game.h — no stub needed.
