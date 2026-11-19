@@ -87,12 +87,13 @@ static void writeStat(struct w2c_env *host,u64 at,const struct stat *s) {
 #define STORE(type,offset,value) do {type v=(type)(value);memcpy(p+offset,&v,sizeof v);}while(0)
   STORE(u32,0,s->st_dev);STORE(u32,4,s->st_mode);STORE(u64,8,s->st_nlink);
   STORE(u32,16,s->st_uid);STORE(u32,20,s->st_gid);STORE(u32,24,s->st_rdev);
-  STORE(int64_t,32,s->st_size);STORE(u32,40,s->st_blksize);STORE(u32,44,s->st_blocks);
 #ifdef _WIN32
+  STORE(int64_t,32,s->st_size);STORE(u32,40,4096);STORE(u32,44,(s->st_size+511)/512);
   STORE(int64_t,48,s->st_atime);STORE(u64,56,0);
   STORE(int64_t,64,s->st_mtime);STORE(u64,72,0);
   STORE(int64_t,80,s->st_ctime);STORE(u64,88,0);STORE(u64,96,s->st_ino);
 #else
+  STORE(int64_t,32,s->st_size);STORE(u32,40,s->st_blksize);STORE(u32,44,s->st_blocks);
   STORE(int64_t,48,s->st_atimespec.tv_sec);STORE(u64,56,s->st_atimespec.tv_nsec);
   STORE(int64_t,64,s->st_mtimespec.tv_sec);STORE(u64,72,s->st_mtimespec.tv_nsec);
   STORE(int64_t,80,s->st_ctimespec.tv_sec);STORE(u64,88,s->st_ctimespec.tv_nsec);STORE(u64,96,s->st_ino);

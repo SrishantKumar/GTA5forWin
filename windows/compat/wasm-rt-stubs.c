@@ -5,8 +5,7 @@
 #include <stdbool.h>
 
 void wasm_rt_trap(wasm_rt_trap_t trap) {
-  fprintf(stderr, "[WASM-RT TRAP] code: %d
-", trap);
+  fprintf(stderr, "[WASM-RT TRAP] code: %d\n", trap);
 }
 
 const char *wasm_rt_strerror(wasm_rt_trap_t trap) {
@@ -40,6 +39,27 @@ uint64_t PGFrameRingBytes(void) { return 0; }
 uint64_t PGConstantCopyBytes(void) { return 0; }
 int PGMeshPageHandedBack(uint64_t offset) { (void)offset; return 0; }
 const char *pg_assets_manifest_override(void) { return NULL; }
+void pg_assets_configure(const char *manifest, const char *root) { (void)manifest; (void)root; }
+void pg_assets_prewarm(void) {}
+void pg_mod_path_used(const char *path) { (void)path; }
+const char *pg_mods_folder_path(void) { return ""; }
+const char *pg_game_index_path(void) { return ""; }
+const char *pg_game_files_version(void) { return "current"; }
+bool pg_mods_archive_path(const char *enginePath, char *out, size_t cap) { (void)enginePath; (void)out; (void)cap; return false; }
+struct PGModPiece;
+int pg_mods_for_archive(const char *enginePath, const struct PGModPiece **pieces) { (void)enginePath; if (pieces) *pieces = NULL; return 0; }
+
+static char gLocalGameFolder[1024] = {0};
+void PGSetLocalGameFolder(const char *dataPath) {
+  if (dataPath && *dataPath) {
+    snprintf(gLocalGameFolder, sizeof(gLocalGameFolder), "%s", dataPath);
+  } else {
+    gLocalGameFolder[0] = 0;
+  }
+}
+bool PGUsingLocalGameFolder(void) {
+  return gLocalGameFolder[0] != 0;
+}
 
 uint64_t w2c_game_fn_begin_low_quality_photo_copy(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_begin_take_high_quality_photo(void *inst, ...) { (void)inst; return 0; }

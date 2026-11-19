@@ -97,6 +97,10 @@ static inline int pthread_mutex_lock(pthread_mutex_t *m) {
     return 0;
 }
 
+static inline int pthread_mutex_trylock(pthread_mutex_t *m) {
+    return TryEnterCriticalSection(m) ? 0 : EBUSY;
+}
+
 static inline int pthread_mutex_unlock(pthread_mutex_t *m) {
     LeaveCriticalSection(m);
     return 0;
@@ -124,6 +128,18 @@ static inline int pthread_cond_timedwait_relative_np(pthread_cond_t *c, pthread_
         ms = (DWORD)(reltime->tv_sec * 1000 + (reltime->tv_nsec / 1000000));
     }
     if (!SleepConditionVariableCS(c, m, ms)) {
+        return ETIMEDOUT;
+    }
+    return 0;
+}
+
+static inline int pthread_cond_timedwait(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *abstime) {
+    if (!abstime) return SleepConditionVariableCS(c, m, INFINITE) ? 0 : -1;
+    struct timespec now;
+    clock_gettime(CLOCK_REALTIME, &now);
+    int64_t ms = (int64_t)(abstime->tv_sec - now.tv_sec) * 1000 + (abstime->tv_nsec - now.tv_nsec) / 1000000;
+    if (ms < 0) ms = 0;
+    if (!SleepConditionVariableCS(c, m, (DWORD)ms)) {
         return ETIMEDOUT;
     }
     return 0;
@@ -201,6 +217,22 @@ static inline int pthread_detach(pthread_t thread) {
 static inline pthread_t pthread_self(void) {
     return GetCurrentThread();
 }
+
+static inline void pthread_exit(void *retval) {
+    (void)retval;
+    ExitThread(0);
+}
+
+#define pthread_cleanup_push(routine, arg) \
+    do { \
+        void (*__cleanup_routine)(void *) = (routine); \
+        void *__cleanup_arg = (arg);
+
+#define pthread_cleanup_pop(execute) \
+        if (execute) { \
+            __cleanup_routine(__cleanup_arg); \
+        } \
+    } while (0)
 
 #ifdef __cplusplus
 }

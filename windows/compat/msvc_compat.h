@@ -30,12 +30,48 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 // _USE_MATH_DEFINES makes <math.h> expose M_PI, M_E, etc. on MSVC/clang-cl.
 // Must be defined before the first <math.h> inclusion.
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>
+
+#ifndef O_NONBLOCK
+#define O_NONBLOCK 00004000
+#endif
+#ifndef O_DIRECTORY
+#define O_DIRECTORY 00200000
+#endif
+#ifndef O_NOFOLLOW
+#define O_NOFOLLOW 00400000
+#endif
+#ifndef O_CLOEXEC
+#define O_CLOEXEC 02000000
+#endif
+#ifndef O_ACCMODE
+#define O_ACCMODE (_O_RDONLY | _O_WRONLY | _O_RDWR)
+#endif
+
+#ifndef F_GETFL
+#define F_GETFL 3
+#endif
+#ifndef F_SETFL
+#define F_SETFL 4
+#endif
+
+#ifndef lstat
+#define lstat stat
+#endif
+
+static inline int fcntl(int fd, int cmd, ...) {
+    (void)fd;
+    if (cmd == F_GETFL) return _O_RDWR;
+    if (cmd == F_SETFL) return 0;
+    return 0;
+}
 
 #ifndef _longjmp
 #define _longjmp longjmp
