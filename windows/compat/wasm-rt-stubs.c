@@ -205,3 +205,24 @@ const char *pg_app_symbol(uintptr_t pc) {
   return NULL;
 }
 
+// ponytail: w2c_env_wasm_httpfs_io_start_js is used for streaming game assets over HTTP in browser/JS.
+// On desktop Windows with local game files, this is a no-op.
+void w2c_env_wasm_httpfs_io_start_js(struct w2c_env *host, u64 table) {
+  (void)host;
+  (void)table;
+}
+
+// ponytail: Native Opus hook. Returning 0 falls back to the in-engine Wasm Opus decoder in game_62.c.
+typedef struct w2c_game w2c_game;
+u32 pg_opus_frame(w2c_game *instance, u64 st, u64 data, u32 len, u64 pcm, u32 frame_size, u32 *result) {
+  (void)instance;
+  (void)st;
+  (void)data;
+  (void)len;
+  (void)pcm;
+  (void)frame_size;
+  (void)result;
+  return 0;
+}
+
+
