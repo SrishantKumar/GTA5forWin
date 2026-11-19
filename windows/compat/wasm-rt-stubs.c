@@ -39,6 +39,30 @@ const char *PGSelectedGameLanguage(void) {
   return gSelectedLanguage;
 }
 
+static bool gModsOff = false;
+void PGSetModsOff(bool off) {
+  gModsOff = off;
+}
+
+static double gSubtitleRaise = 0.0;
+void PGSetSubtitleRaise(double raise) {
+  gSubtitleRaise = (raise >= 0.0 && raise < 0.3) ? raise : 0.0;
+}
+
+static double gMinimapDX = 0.0, gMinimapDY = 0.0, gMinimapScale = 1.0;
+void PGSetMinimapLayout(double dx, double dy, double scale) {
+  gMinimapDX = dx;
+  gMinimapDY = dy;
+  gMinimapScale = (scale > 0.4 && scale < 2.5) ? scale : 1.0;
+}
+
+static double gHelpX = 0.0, gHelpY = 0.0, gHelpScale = 1.0;
+void PGSetHelpTextLayout(double x, double y, double scale) {
+  gHelpX = (x >= -0.1 && x <= 1.0) ? x : 0.0;
+  gHelpY = (y >= -0.1 && y <= 1.0) ? y : 0.0;
+  gHelpScale = (scale > 0.4 && scale < 2.5) ? scale : 1.0;
+}
+
 uint64_t PGGPUTextureBytes(void) { return 0; }
 uint64_t PGGPUBufferBytes(void) { return 0; }
 uint64_t PGFrameRingBytes(void) { return 0; }

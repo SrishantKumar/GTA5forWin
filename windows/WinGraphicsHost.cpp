@@ -562,6 +562,7 @@ ID3D11Device *PGGetD3D11Device(void) { return gDevice.Get(); }
 ID3D11DeviceContext *PGGetD3D11Context(void) { return gContext.Get(); }
 IDXGISwapChain *PGGetD3D11SwapChain(void) { return gSwapChain.Get(); }
 ID3D11RenderTargetView *PGGetD3D11BackBufferRTV(void) { return gBackBufferRTV.Get(); }
+double PGGPUFrameMilliseconds(void) { return gFrameTimeMs.load(); }
 
 void PGD3D11Present(UINT syncInterval) {
     if (gSwapChain) {
