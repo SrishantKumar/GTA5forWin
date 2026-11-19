@@ -1,4 +1,5 @@
 #include "HostInternal.h"
+#include "game.h"
 #include <string.h>
 f64 w2c_env_0x5Femscripten_receive_on_main_thread_js(struct w2c_env *h,u32 index,u64 code,u64 caller,u32 size,u64 args,u64 ctx,u64 ctxargs) {
   u64 values[12]={0};if(size>sizeof(values)*2 || size%16)wasm_rt_trap(WASM_RT_TRAP_OOB);
