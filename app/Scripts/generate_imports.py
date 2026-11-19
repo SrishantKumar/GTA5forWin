@@ -39,6 +39,8 @@ for module, field, result, name, signature in functions:
         if result != 'void': output.append('  return 0;')
         report.append(f'{module}.{field}\tunported: stops the boot probe')
     output.append('}\n')
+(root / 'Generated').mkdir(exist_ok=True)
 (root / 'Generated/Imports.c').write_text('\n'.join(output))
+(root / 'Build').mkdir(exist_ok=True)
 (root / 'Build/import-status.tsv').write_text('\n'.join(report)+'\n')
 print(f'Generated {len(functions)} typed import bindings.')

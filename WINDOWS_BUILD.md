@@ -34,13 +34,27 @@ It contains **ZERO browser, Electron, Node.js, WebView, or web runtime dependenc
 
 ---
 
-## 2. One-Click Build (`build_win.bat`)
+## 2. One-Click Build
 
-Clone the repository and run the Windows build batch script:
+### Option A: Full Native AOT Compilation (`build_win_aot.bat` — Recommended)
+To build the complete ~250–300 MB native Windows binary with the game engine compiled directly into machine code:
 
 ```cmd
-git clone https://github.com/kevinerikjs/gta5-macos-port.git
-cd gta5-macos-port
+git clone https://github.com/SrishantKumar/GTA5forWin.git
+cd GTA5forWin
+build_win_aot.bat "D:\Path\To\YourGameFolder"
+```
+*(Or specify the path to `game.wasm` directly).* The script runs `wasm2c`, patches the engine files, generates typed native bindings, and compiles the full native executable.
+
+On macOS, you can run the exact same generator with:
+```bash
+./build_mac_app.sh --mirror /path/to/your/game-folder
+```
+
+### Option B: Fast Host Shell Build (`build_win.bat`)
+To compile the launcher UI, Direct3D 11 backend, audio, and host input shell (~500 KB):
+
+```cmd
 build_win.bat
 ```
 

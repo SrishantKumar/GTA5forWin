@@ -23,16 +23,27 @@ if(WIN32)
     )
 endif()
 
+# Check if AOT compiled game engine wasm2c output exists
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/app/Generated/game.h")
+    set(PG_HAS_GENERATED_GAME 1)
+    add_compile_definitions(PG_HAS_GENERATED_GAME=1)
+    message(STATUS "AOT Game Engine: FOUND in app/Generated (game.h)")
+else()
+    set(PG_HAS_GENERATED_GAME 0)
+    add_compile_definitions(PG_HAS_GENERATED_GAME=0)
+    message(STATUS "AOT Game Engine: NOT found (using stub engine shell)")
+endif()
+
 # Include directories
 include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/Generated
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/wabt-1.0.42/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/wabt-1.0.42/share/wabt/wasm2c
     ${CMAKE_CURRENT_SOURCE_DIR}/windows
     ${CMAKE_CURRENT_SOURCE_DIR}/windows/compat
     ${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/imgui
     ${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/imgui/backends
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Source
-    ${CMAKE_CURRENT_SOURCE_DIR}/app/Generated
-    ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/wabt-1.0.42/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/wabt-1.0.42/share/wabt/wasm2c
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/simde
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/opus-1.5.2/include
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Vendor/blink
@@ -76,6 +87,7 @@ set(ENGINE_SOURCES
     app/Source/NativeThreadCPU.c
     app/Source/NativeMemoryBreakdown.c
     app/Source/NativeProxy.c
+    windows/compat/wasm-rt-stubs.c
 )
 
 # Check if AOT compiled game engine wasm2c output exists
@@ -98,8 +110,12 @@ foreach(SRC ${WABT_RUNTIME})
         set(HAS_WABT_RUNTIME TRUE)
     endif()
 endforeach()
-if(NOT HAS_WABT_RUNTIME)
-    list(APPEND ENGINE_SOURCES windows/compat/wasm-rt-stubs.c)
+if(HAS_WABT_RUNTIME)
+    add_compile_definitions(PG_HAS_WABT_RUNTIME=1)
+    message(STATUS "WABT runtime implementation: FOUND")
+else()
+    add_compile_definitions(PG_HAS_WABT_RUNTIME=0)
+    message(STATUS "WABT runtime implementation: NOT found (using stubs)")
 endif()
 
 # Add executable

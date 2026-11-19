@@ -13,6 +13,7 @@ extern "C" {
 struct w2c_env;
 struct w2c_wasi__snapshot__preview1;
 
+#if !defined(PG_HAS_GENERATED_GAME) || !PG_HAS_GENERATED_GAME
 typedef struct w2c_game {
     uint32_t w2c_g0;
     uint64_t w2c_g1;
@@ -46,6 +47,7 @@ static inline void w2c_game_0x5Femscripten_tls_init(w2c_game *instance) {
 static inline void w2c_game_f3111(w2c_game *instance, uint64_t job) {
     (void)instance; (void)job;
 }
+#endif
 
 // Host import functions called by NativeProxy.c
 void w2c_wasi__snapshot__preview1_proc_exit(struct w2c_wasi__snapshot__preview1 *host, u32 status);

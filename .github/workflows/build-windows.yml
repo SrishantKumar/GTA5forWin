@@ -14,6 +14,11 @@ on:
           - Release
           - RelWithDebInfo
           - Debug
+      game_wasm_url:
+        description: 'Direct download URL for game.wasm (optional: builds full ~300 MB AOT engine)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   build-windows:
@@ -39,11 +44,19 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Generate missing includes
+      - name: Prepare Engine (AOT or Stub)
         shell: pwsh
         run: |
-          # Generates Generated/asi-natives.inc (empty table stub when game_*.c are absent).
-          python app/Scripts/stub_asi_natives.py
+          $wasmUrl = "${{ github.event.inputs.game_wasm_url }}"
+          if ($wasmUrl -ne "") {
+            Write-Host "Triggering AOT engine pipeline from URL: $wasmUrl"
+            python app/Scripts/prepare_aot.py --url "$wasmUrl"
+          } elseif (Test-Path "app/Generated/game.h") {
+            Write-Host "Found pre-generated AOT engine sources in app/Generated."
+          } else {
+            Write-Host "No game_wasm_url or app/Generated/game.h found; building native host shell with stubs."
+            python app/Scripts/stub_asi_natives.py
+          }
 
       - name: Configure CMake
         shell: pwsh

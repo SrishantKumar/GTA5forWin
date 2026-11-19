@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
+#if !defined(PG_HAS_WABT_RUNTIME) || !PG_HAS_WABT_RUNTIME
 void wasm_rt_trap(wasm_rt_trap_t trap) {
   fprintf(stderr, "[WASM-RT TRAP] code: %d\n", trap);
 }
@@ -27,6 +29,7 @@ void wasm_rt_init(void) {}
 void wasm_rt_init_thread(void) {}
 void wasm_rt_free_thread(void) {}
 wasm_rt_trap_t wasm_rt_impl_try(void) { return WASM_RT_TRAP_NONE; }
+#endif
 
 static char gSelectedLanguage[32] = "en-US";
 void PGSetSelectedGameLanguage(const char *lang) {
@@ -90,6 +93,7 @@ bool PGUsingLocalGameFolder(void) {
   return gLocalGameFolder[0] != 0;
 }
 
+#if !defined(PG_HAS_GENERATED_GAME) || !PG_HAS_GENERATED_GAME
 uint64_t w2c_game_fn_begin_low_quality_photo_copy(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_begin_take_high_quality_photo(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_buddy_get_size(void *inst, ...) { (void)inst; return 0; }
@@ -194,6 +198,7 @@ u32 w2c_env_0x5F_syscall_sendto(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u
 u32 w2c_env_0x5F_syscall_setsockopt(struct w2c_env *h, u32 a, u32 b, u32 c, u64 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
 u32 w2c_env_0x5F_syscall_shutdown(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
 u32 w2c_env_0x5F_syscall_socket(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
+#endif
 
 const char *pg_app_symbol(uintptr_t pc) {
   (void)pc;

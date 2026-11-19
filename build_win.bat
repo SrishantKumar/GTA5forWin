@@ -30,7 +30,13 @@ echo.
 echo [1/3] Generating stub includes if needed...
 where python >nul 2>&1
 if %ERRORLEVEL% equ 0 (
-    python app\Scripts\stub_asi_natives.py
+    if not exist "app\Generated\game.h" (
+        python app\Scripts\stub_asi_natives.py
+        echo [INFO] AOT game engine not compiled in app\Generated.
+        echo [INFO] Building native host shell. For full ~300 MB AOT native engine, run build_win_aot.bat.
+    ) else (
+        echo [INFO] Found AOT game engine in app\Generated. Building full native binary.
+    )
 )
 
 echo.
