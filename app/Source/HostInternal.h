@@ -2,6 +2,7 @@
 #include "game.h"
 #include "wasm-rt-exceptions.h"
 #include "EngineHost.h"
+#include "WasmFutex.h"
 #include <stdatomic.h>
 #include <setjmp.h>
 
