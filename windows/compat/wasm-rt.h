@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+// pthread is available via windows/compat/pthread.h (pthreads-win32 / winpthread)
+#include <pthread.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,12 +44,17 @@ typedef enum {
 typedef void *wasm_rt_func_type_t;
 
 typedef struct {
-  void *data;
-  void *data_end;
+  // data/data_end use volatile _Atomic uint8_t* on the macOS side; plain void*
+  // here lets the C compiler accept the assignment without -Wpointer-sign.
+  // Cast to uint8_t* at point of use (EngineHost.c already does this for reads).
+  volatile uint8_t *data;
+  volatile uint8_t *data_end;
   size_t size;
   size_t pages;
   size_t max_pages;
   size_t page_size;
+  bool is64;             // 64-bit address space flag (always true for GTA V)
+  pthread_mutex_t mem_lock; // protects memory resize operations
 } wasm_rt_shared_memory_t;
 
 typedef wasm_rt_shared_memory_t wasm_rt_memory_t;
@@ -73,6 +80,12 @@ void wasm_rt_init(void);
 void wasm_rt_init_thread(void);
 void wasm_rt_free_thread(void);
 wasm_rt_trap_t wasm_rt_impl_try(void);
+
+// Wasm atomic futex operations — declared here so any file that includes
+// wasm-rt.h (via HostInternal.h → wasm-rt.h) has the prototypes.
+uint32_t pg_atomic_wait32(wasm_rt_shared_memory_t *, uint64_t, uint32_t, uint64_t);
+uint32_t pg_atomic_wait64(wasm_rt_shared_memory_t *, uint64_t, uint64_t, uint64_t);
+uint32_t pg_atomic_notify(wasm_rt_shared_memory_t *, uint64_t, uint32_t);
 
 #ifdef __cplusplus
 }

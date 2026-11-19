@@ -30,6 +30,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+// _USE_MATH_DEFINES makes <math.h> expose M_PI, M_E, etc. on MSVC/clang-cl.
+// Must be defined before the first <math.h> inclusion.
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#include <math.h>
 
 #ifndef _longjmp
 #define _longjmp longjmp
