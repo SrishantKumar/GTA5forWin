@@ -32,6 +32,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/wabt-1.0.42/share/wabt/wasm2c
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/simde
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/opus-1.5.2/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/Vendor/blink
+    ${CMAKE_CURRENT_SOURCE_DIR}/app/Vendor/zstd
 )
 
 # Source files
@@ -102,6 +104,9 @@ if(WIN32)
         user32
         gdi32
         advapi32
+        winmm
+        avrt
+        synchronization
     )
 endif()
 
@@ -112,6 +117,11 @@ if(MSVC)
         /permissive-
         /EHsc
         /fp:fast
+        /wd4996
+        /wd4005
+        /wd4244
+        /wd4267
+        /FI"${CMAKE_CURRENT_SOURCE_DIR}/windows/compat/msvc_compat.h"
     )
 endif()
 

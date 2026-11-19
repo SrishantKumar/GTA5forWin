@@ -1,3 +1,12 @@
+#ifdef _WIN32
+#include "EngineHost.h"
+#include <stddef.h>
+
+size_t PGThreadCPU(char *out, size_t size) {
+    if (out && size) out[0] = 0;
+    return 0;
+}
+#else
 // CPU time per thread, for the Health line (GTA-162). The Health line has one CPU number for the whole app, and
 // a hot phone can't say which part of the game heats it: the engine's main thread, its workers (audio, streaming,
 // physics), the Metal renderer, file reads or iOS's own audio output. Each call reports the cores every group of
@@ -385,4 +394,5 @@ static void startProfiler(void) {
 }
 #else
 static void startProfiler(void) {}
+#endif
 #endif

@@ -3,6 +3,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void pg_log(const char *message);
+
 typedef void (*PGLogCallback)(const char *, void *);
 typedef struct {
   float leftX, leftY, rightX, rightY, leftTrigger, rightTrigger;
@@ -225,3 +231,7 @@ void PGStreamingHealth(uint64_t out[6]);		// NativeStreamingHealth.c (GTA-116)
 double PGGPUFrameMilliseconds(void);		// MRRenderer.mm
 size_t PGThreadCPU(char *out, size_t size);	// NativeThreadCPU.c: cores per thread group since the last call (GTA-162)
 int PGPerfOverlaySample(double *watts, double *cores, double *pShare);	// NativePerfCounters.m: CPU power for the FPS counter (GTA-216)
+
+#ifdef __cplusplus
+}
+#endif

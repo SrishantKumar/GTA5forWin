@@ -1,3 +1,24 @@
+#ifdef _WIN32
+#include "HostInternal.h"
+#include <stdint.h>
+#include <stdbool.h>
+
+int32_t PGUserMusicPrepare(const char *musicFolder, const char *filesRoot) { (void)musicFolder; (void)filesRoot; return 0; }
+u64 pg_user_music_station(w2c_game *instance, u32 hash, u32 type) { (void)instance; (void)hash; (void)type; return 0; }
+u64 pg_radio_wheel_name(w2c_game *instance, u64 settings, u64 name) { (void)instance; (void)settings; return name; }
+u64 pg_user_music_ref(w2c_game *instance, u32 ref, u32 type) { (void)instance; (void)ref; (void)type; return 0; }
+u32 pg_user_music_scan(w2c_game *instance, u64 manager) { (void)instance; (void)manager; return 0; }
+u32 pg_user_music_open(w2c_game *instance, u64 track, u64 reader, u64 manager, u32 index, u32 start_ms) {
+    (void)instance; (void)track; (void)reader; (void)manager; (void)index; (void)start_ms;
+    return 0;
+}
+u32 pg_user_music_length(w2c_game *instance, u64 reader) { (void)instance; (void)reader; return (u32)-1; }
+u32 pg_user_music_rate(w2c_game *instance, u64 reader) { (void)instance; (void)reader; return (u32)-1; }
+void pg_user_music_close(w2c_game *instance, u64 reader) { (void)instance; (void)reader; }
+bool PGSelfRadioAudible(void) { return false; }
+void PGSelfRadioNext(void) {}
+void pg_user_music_pump(w2c_game *instance, u64 player) { (void)instance; (void)player; }
+#else
 // Self Radio: the player's own songs on the radio station RADIO_19_USER (GTA-5, Scripts/prepare_user_music.py).
 //
 // The PC game lists the songs in the user music folder with Windows Media Foundation, writes that list
@@ -452,3 +473,4 @@ void pg_user_music_pump(w2c_game *instance, u64 player) {
   }
   pthread_mutex_unlock(&streamsLock);
 }
+#endif

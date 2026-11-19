@@ -1,3 +1,22 @@
+#ifdef _WIN32
+#include "BC1ToASTC.h"
+#include <stddef.h>
+
+void PGBC1BlockToASTC(const uint8_t bc1[8], uint8_t astc[16]) { (void)bc1; (void)astc; }
+void PGBC3BlockToASTC(const uint8_t bc3[16], uint8_t astc[16]) { (void)bc3; (void)astc; }
+void *PGTranscodeBC1ToASTC(uint32_t w, uint32_t h, uint32_t d, uint32_t bpr, uint32_t rpi, const void *data, size_t size,
+                           size_t *outSize, uint32_t *outBpr, uint32_t *outRpi) {
+    (void)w; (void)h; (void)d; (void)bpr; (void)rpi; (void)data; (void)size; (void)outBpr; (void)outRpi;
+    if (outSize) *outSize = 0;
+    return NULL;
+}
+void *PGTranscodeBCToASTC(int kind, uint32_t w, uint32_t h, uint32_t d, uint32_t bpr, uint32_t rpi, const void *data, size_t size,
+                          size_t *outSize, uint32_t *outBpr, uint32_t *outRpi) {
+    (void)kind; (void)w; (void)h; (void)d; (void)bpr; (void)rpi; (void)data; (void)size; (void)outBpr; (void)outRpi;
+    if (outSize) *outSize = 0;
+    return NULL;
+}
+#else
 // BC1 blocks rewritten as ASTC 4x4 blocks, for GPUs without BC support (iPhones).
 //
 // A BC1 block is two RGB565 endpoints and a 2-bit index per texel; an ASTC 4x4 block can hold the
@@ -259,3 +278,4 @@ void *PGTranscodeBCToASTC(int kind, uint32_t w, uint32_t h, uint32_t d, uint32_t
 	*outSize = image * d; *outBpr = (uint32_t)pitch; *outRpi = bh;
 	return out;
 }
+#endif

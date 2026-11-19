@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include "NativeMemoryBreakdown.h"
+void PGLogMemoryBreakdown(const char *reason) { (void)reason; }
+#else
 // The memory breakdown (GTA-217). iOS stops the app when its footprint (task_vm_info.phys_footprint) reaches the
 // limit, so this says what the footprint is made of, in parts that add up to it:
 //   - the engine block (the game's own memory, one mapping): what iOS holds of it, per engine pool, against what the
@@ -279,3 +283,4 @@ void PGLogMemoryBreakdown(const char *reason) {
 	pg_log(line);
 	pthread_mutex_unlock(&breakdownLock);
 }
+#endif

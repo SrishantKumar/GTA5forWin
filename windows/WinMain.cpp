@@ -1,7 +1,12 @@
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <shellscalingapi.h>
+#include <thread>
 #include <chrono>
 #include <string>
 #include <cstdio>
@@ -12,6 +17,8 @@
 #include "WinAudio.h"
 #include "WinFiles.h"
 #include "../app/Source/EngineHost.h"
+
+extern "C" void pg_log(const char *message);
 
 namespace fs = std::filesystem;
 

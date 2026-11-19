@@ -3,9 +3,14 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +31,16 @@ typedef CONDITION_VARIABLE pthread_cond_t;
 typedef void *pthread_condattr_t;
 #define PTHREAD_COND_INITIALIZER {0}
 
+typedef INIT_ONCE pthread_once_t;
+#define PTHREAD_ONCE_INIT INIT_ONCE_STATIC_INIT
+
+typedef int qos_class_t;
+#define QOS_CLASS_USER_INTERACTIVE 1
+#define QOS_CLASS_USER_INITIATED 2
+#define QOS_CLASS_DEFAULT 3
+#define QOS_CLASS_UTILITY 4
+#define QOS_CLASS_BACKGROUND 5
+
 static inline int pthread_attr_init(pthread_attr_t *attr) {
     if (attr) attr->stackSize = 0;
     return 0;
@@ -39,6 +54,36 @@ static inline int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksi
 static inline int pthread_attr_destroy(pthread_attr_t *attr) {
     (void)attr;
     return 0;
+}
+
+static inline int pthread_attr_set_qos_class_np(pthread_attr_t *attr, qos_class_t qos, int relative_priority) {
+    (void)attr; (void)qos; (void)relative_priority;
+    return 0;
+}
+
+static inline int pthread_set_qos_class_self_np(qos_class_t qos, int relative_priority) {
+    (void)qos; (void)relative_priority;
+    return 0;
+}
+
+static inline int pthread_setname_np(const char *name) {
+    (void)name;
+    return 0;
+}
+
+static inline int pthread_getname_np(pthread_t thread, char *name, size_t len) {
+    (void)thread;
+    if (name && len) name[0] = 0;
+    return 0;
+}
+
+static inline pthread_t pthread_from_mach_thread_np(void *mach_thread) {
+    (void)mach_thread;
+    return NULL;
+}
+
+static inline int pthread_equal(pthread_t t1, pthread_t t2) {
+    return t1 == t2;
 }
 
 static inline int pthread_mutex_init(pthread_mutex_t *m, const pthread_mutexattr_t *a) {
@@ -73,6 +118,17 @@ static inline int pthread_cond_wait(pthread_cond_t *c, pthread_mutex_t *m) {
     return 0;
 }
 
+static inline int pthread_cond_timedwait_relative_np(pthread_cond_t *c, pthread_mutex_t *m, const struct timespec *reltime) {
+    DWORD ms = INFINITE;
+    if (reltime) {
+        ms = (DWORD)(reltime->tv_sec * 1000 + (reltime->tv_nsec / 1000000));
+    }
+    if (!SleepConditionVariableCS(c, m, ms)) {
+        return ETIMEDOUT;
+    }
+    return 0;
+}
+
 static inline int pthread_cond_signal(pthread_cond_t *c) {
     WakeConditionVariable(c);
     return 0;
@@ -85,6 +141,18 @@ static inline int pthread_cond_broadcast(pthread_cond_t *c) {
 
 static inline int pthread_cond_destroy(pthread_cond_t *c) {
     (void)c;
+    return 0;
+}
+
+static inline BOOL CALLBACK _pthread_once_callback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context) {
+    (void)InitOnce; (void)Context;
+    void (*init_routine)(void) = (void (*)(void))Parameter;
+    init_routine();
+    return TRUE;
+}
+
+static inline int pthread_once(pthread_once_t *once_control, void (*init_routine)(void)) {
+    InitOnceExecuteOnce(once_control, _pthread_once_callback, (void *)init_routine, NULL);
     return 0;
 }
 

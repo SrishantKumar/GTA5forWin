@@ -283,7 +283,8 @@ static const char *pg_region_kind(unsigned tag){
 uint64_t PGGPUTextureBytes(void),PGGPUBufferBytes(void),PGFrameRingBytes(void),PGConstantCopyBytes(void);
 static void pg_log_app_memory(void){
  static char otherNames[40][16];
- struct{const char *kind;uint64_t bytes;}kinds[40];int kindCount=0;
+ typedef struct { const char *kind; uint64_t bytes; } PGAppMemKind;
+ PGAppMemKind kinds[40]; int kindCount=0;
  const uint64_t page=vm_page_size;
  uint64_t engineLow=(uint64_t)(uintptr_t)env.memory.data,engineHigh=(uint64_t)(uintptr_t)env.memory.data_end+(64ull<<20);
  uint64_t outside=0,engine=0;
@@ -308,7 +309,7 @@ static void pg_log_app_memory(void){
  }
  task_vm_info_data_t vm;mach_msg_type_number_t vmCount=TASK_VM_INFO_COUNT;uint64_t footprint=0;
  if(task_info(mach_task_self(),TASK_VM_INFO,(task_info_t)&vm,&vmCount)==KERN_SUCCESS)footprint=vm.phys_footprint;
- for(int a=0;a<kindCount;a++)for(int b=a+1;b<kindCount;b++)if(kinds[b].bytes>kinds[a].bytes){__typeof__(kinds[0]) t=kinds[a];kinds[a]=kinds[b];kinds[b]=t;}
+ for(int a=0;a<kindCount;a++)for(int b=a+1;b<kindCount;b++)if(kinds[b].bytes>kinds[a].bytes){PGAppMemKind t=kinds[a];kinds[a]=kinds[b];kinds[b]=t;}
  char line[1100];int at=snprintf(line,sizeof line,"App memory (footprint %lluMB): engine block %lluMB, outside it %lluMB:",
   (unsigned long long)(footprint>>20),(unsigned long long)(engine>>20),(unsigned long long)(outside>>20));
  for(int k=0;k<kindCount&&at<(int)sizeof line-48;k++)if(kinds[k].bytes>=(1ull<<20))at+=snprintf(line+at,sizeof line-at," %s %lluMB ·",kinds[k].kind,(unsigned long long)(kinds[k].bytes>>20));

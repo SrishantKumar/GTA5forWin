@@ -1,3 +1,28 @@
+#ifdef _WIN32
+#include "NativeASI.h"
+#include <string.h>
+
+bool pg_asi_init(const PGAsiHost *host) { (void)host; return false; }
+int pg_asi_load(const char *name, const char *root, const uint8_t *bytes, uint64_t length) {
+    (void)name; (void)root; (void)bytes; (void)length;
+    return 0;
+}
+void pg_asi_tick(void) {}
+void pg_asi_key(int virtualKey, bool down) { (void)virtualKey; (void)down; }
+void pg_asi_key_info(PGAsiKeyInfo *info) { if (info) memset(info, 0, sizeof(*info)); }
+bool pg_asi_polled_keys(uint8_t polled[256]) { if (polled) memset(polled, 0, 256); return false; }
+bool pg_asi_module_keys(const char *name, uint8_t polled[256], bool *keyboardHandler) {
+    (void)name; if (polled) memset(polled, 0, 256);
+    if (keyboardHandler) *keyboardHandler = false;
+    return false;
+}
+void pg_asi_set_key_remap(const char *module, int modKey, int key) { (void)module; (void)modKey; (void)key; }
+void pg_asi_clear_key_remaps(void) {}
+void pg_asi_stats(uint64_t *us, uint64_t *instructions) {
+    if (us) *us = 0;
+    if (instructions) *instructions = 0;
+}
+#else
 // Script Hook V mods (.asi) on iOS (GTA-69): a Windows x64 DLL loader, the Windows and Script Hook V
 // functions such DLLs import, and cooperative script threads, on top of the Blink x86-64
 // interpreter. See NativeASI.h.
@@ -945,3 +970,4 @@ void TerminateSignal(struct Machine *m, int sig, int code) {
   if (cur) { cur->state = CO_DEAD; cur->yield = true; }
   if (m->canhalt) siglongjmp(m->onhalt, kMachineHalt);
 }
+#endif
