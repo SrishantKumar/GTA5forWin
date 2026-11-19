@@ -21,6 +21,7 @@
 #include <shlobj.h>
 #include <dwmapi.h>
 #include <xinput.h>
+#include <wrl/client.h>
 
 #include <string>
 #include <vector>
@@ -435,7 +436,7 @@ void LoadConfig() {
     std::string path = WinFiles::GetConfigFilePath();
     if (!fs::exists(path)) {
         // Fallback check in AppData Roaming
-        path = fs::path(WinFiles::GetAppDataFolder()) / "settings.ini";
+        path = (fs::path(WinFiles::GetAppDataFolder()) / "settings.ini").string();
     }
 
     char buf[MAX_PATH] = {};
