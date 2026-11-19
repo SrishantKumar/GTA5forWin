@@ -48,11 +48,25 @@ for name in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h']:
         anchor = '#define MEM_ADDR(mem, addr, n) &((mem)->data[addr])\n#endif\n'
         if anchor in t:
             t = t.replace(anchor, anchor + '\n' + MACRO_DEF + '\n', 1)
+    # NativeRuntime.h (and SharedSIMD.h) must come AFTER v128 is typedef'd.
+    # In game-impl.h that happens inside the simde block; the first safe anchor
+    # after the typedef is '#include <stdatomic.h>' (line ~1246).
+    # ponytail: falling back to '#include "game.h"' would put it before v128 —
+    # that breaks v128_load_shared (implicit int return). Don't use it.
     if '#include "NativeRuntime.h"' not in t:
-        if '#include "game.h"\n' in t:
-            t = t.replace('#include "game.h"\n', '#include "game.h"\n#include "NativeRuntime.h"\n', 1)
+        anchor = '#include <stdatomic.h>\n'
+        if anchor in t:
+            t = t.replace(anchor, anchor + '#include "NativeRuntime.h"\n', 1)
         elif '#include <string.h>\n' in t:
             t = t.replace('#include <string.h>\n', '#include <string.h>\n#include "NativeRuntime.h"\n', 1)
+    # Remove any wrongly-placed early include (before v128 typedef) that may
+    # have been inserted by a previous run of this script.
+    # We do this by stripping any occurrence that sits before DEFINE_SHARED_LOAD.
+    if t.index('#include "NativeRuntime.h"') < t.index('#include <stdatomic.h>'):
+        t = t.replace('#include "NativeRuntime.h"\n', '', 1)  # remove the early one
+        anchor = '#include <stdatomic.h>\n'
+        if anchor in t and '#include "NativeRuntime.h"' not in t:
+            t = t.replace(anchor, anchor + '#include "NativeRuntime.h"\n', 1)
     if t != s: path.write_text(t); helpers += 1
 left = sum(len(re.findall(r'MEM_ADDR\(mem, addr, (?:sizeof\(t[12]\)|16)\)', (root / 'Generated' / n).read_text()))
            for n in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h'] if (root / 'Generated' / n).exists())
