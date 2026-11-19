@@ -78,11 +78,16 @@ set(WABT_RUNTIME
     app/Tools/wabt-1.0.42/share/wabt/wasm2c/wasm-rt-mem-impl.c
     app/Tools/wabt-1.0.42/share/wabt/wasm2c/wasm-rt-exceptions-impl.c
 )
+set(HAS_WABT_RUNTIME FALSE)
 foreach(SRC ${WABT_RUNTIME})
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${SRC})
         list(APPEND ENGINE_SOURCES ${SRC})
+        set(HAS_WABT_RUNTIME TRUE)
     endif()
 endforeach()
+if(NOT HAS_WABT_RUNTIME)
+    list(APPEND ENGINE_SOURCES windows/compat/wasm-rt-stubs.c)
+endif()
 
 # Add executable
 add_executable(GTA5Port WIN32
@@ -121,7 +126,7 @@ if(MSVC)
         /wd4005
         /wd4244
         /wd4267
-        /FI"${CMAKE_CURRENT_SOURCE_DIR}/windows/compat/msvc_compat.h"
+        /FImsvc_compat.h
     )
 endif()
 
