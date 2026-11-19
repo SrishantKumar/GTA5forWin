@@ -8,6 +8,8 @@ app/Resources/manifest.json
 app/Resources/wgpu_worker.js
 app/*.xcodeproj
 *.ipa
+# macOS metadata files
+._*
 .DS_Store
 
 # Windows & CMake build directories

@@ -49,6 +49,7 @@ jobs:
             Write-Host "Unpacking engine sources..."
             tar -xzf engine-generated.tar.gz
             Remove-Item "engine-generated.tar.gz" -Force
+            Get-ChildItem -Path app -Recurse -Filter "._*" -Force | Remove-Item -Force -ErrorAction SilentlyContinue
           } catch {
             Write-Warning "Failed to download precompiled AOT engine sources: $_"
           }

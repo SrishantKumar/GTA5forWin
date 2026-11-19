@@ -91,7 +91,16 @@ set(ENGINE_SOURCES
 )
 
 # Check if AOT compiled game engine wasm2c output exists
-file(GLOB GENERATED_ENGINE_SOURCES "app/Generated/*.c")
+file(GLOB ALL_GENERATED_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/app/Generated/*.c")
+set(GENERATED_ENGINE_SOURCES "")
+foreach(SRC ${ALL_GENERATED_SOURCES})
+    get_filename_component(SRC_NAME ${SRC} NAME)
+    if(NOT SRC_NAME MATCHES "^\\._")
+        list(APPEND GENERATED_ENGINE_SOURCES ${SRC})
+    endif()
+endforeach()
+list(FILTER GENERATED_ENGINE_SOURCES EXCLUDE REGEX ".*/\\._.*")
+list(FILTER GENERATED_ENGINE_SOURCES EXCLUDE REGEX "^\\._.*")
 if(GENERATED_ENGINE_SOURCES)
     list(APPEND ENGINE_SOURCES ${GENERATED_ENGINE_SOURCES})
     message(STATUS "Including pre-generated AOT engine source files.")
