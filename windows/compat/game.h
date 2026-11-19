@@ -47,6 +47,43 @@ static inline void w2c_game_f3111(w2c_game *instance, uint64_t job) {
     (void)instance; (void)job;
 }
 
+// Host import functions called by NativeProxy.c
+void w2c_wasi__snapshot__preview1_proc_exit(struct w2c_wasi__snapshot__preview1 *host, u32 status);
+u32 w2c_env_0x5F_pthread_create_js(struct w2c_env *host, u64 pthread, u64 attr, u64 routine, u64 argument);
+u32 w2c_env_0x5F_syscall_accept4(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u32 e, u32 f);
+u32 w2c_env_0x5F_syscall_connect(struct w2c_env *h, u32 a, u64 b, u32 c, u32 d, u32 e, u32 f);
+u32 w2c_env_0x5F_syscall_fcntl64(struct w2c_env *h, u32 fd, u32 command, u64 args);
+u32 w2c_env_0x5F_syscall_fstat64(struct w2c_env *h, u32 fd, u64 out);
+u32 w2c_env_0x5F_syscall_ftruncate64(struct w2c_env *h, u32 fd, u64 length);
+u32 w2c_env_0x5F_syscall_getcwd(struct w2c_env *h, u64 out, u64 size);
+u32 w2c_env_0x5F_syscall_getdents64(struct w2c_env *h, u32 fd, u64 at, u64 capacity);
+u32 w2c_env_0x5F_syscall_getsockname(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u32 e, u32 f);
+u32 w2c_env_0x5F_syscall_getsockopt(struct w2c_env *h, u32 a, u32 b, u32 c, u64 d, u64 e, u32 f);
+u32 w2c_env_0x5F_syscall_ioctl(struct w2c_env *h, u32 fd, u32 request, u64 args);
+u32 w2c_env_0x5F_syscall_lstat64(struct w2c_env *h, u64 name, u64 out);
+u32 w2c_env_0x5F_syscall_mkdirat(struct w2c_env *h, u32 fd, u64 name, u32 mode);
+u32 w2c_env_0x5F_syscall_newfstatat(struct w2c_env *h, u32 fd, u64 name, u64 out, u32 flags);
+u32 w2c_env_0x5F_syscall_openat(struct w2c_env *host, u32 fd, u64 name, u32 flags, u64 args);
+u32 w2c_env_0x5F_syscall_poll(struct w2c_env *h, u64 a, u32 b, u32 c);
+u32 w2c_env_0x5F_syscall_recvfrom(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u64 e, u64 f);
+u32 w2c_env_0x5F_syscall_renameat(struct w2c_env *h, u32 a, u64 old, u32 b, u64 new);
+u32 w2c_env_0x5F_syscall_rmdir(struct w2c_env *h, u64 name);
+u32 w2c_env_0x5F_syscall_sendto(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u64 e, u32 f);
+u32 w2c_env_0x5F_syscall_setsockopt(struct w2c_env *h, u32 a, u32 b, u32 c, u64 d, u32 e, u32 f);
+u32 w2c_env_0x5F_syscall_shutdown(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f);
+u32 w2c_env_0x5F_syscall_socket(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f);
+u32 w2c_env_0x5F_syscall_stat64(struct w2c_env *h, u64 name, u64 out);
+u32 w2c_env_0x5F_syscall_statfs64(struct w2c_env *h, u64 path, u64 size, u64 out);
+u32 w2c_env_0x5F_syscall_unlinkat(struct w2c_env *h, u32 fd, u64 name, u32 flags);
+u32 w2c_wasi__snapshot__preview1_environ_get(struct w2c_wasi__snapshot__preview1 *host, u64 array, u64 buffer);
+u32 w2c_wasi__snapshot__preview1_environ_sizes_get(struct w2c_wasi__snapshot__preview1 *host, u64 count, u64 size);
+u32 w2c_wasi__snapshot__preview1_fd_close(struct w2c_wasi__snapshot__preview1 *h, u32 fd);
+u32 w2c_wasi__snapshot__preview1_fd_pread(struct w2c_wasi__snapshot__preview1 *h, u32 fd, u64 v, u64 c, u64 at, u64 o);
+u32 w2c_wasi__snapshot__preview1_fd_pwrite(struct w2c_wasi__snapshot__preview1 *h, u32 fd, u64 v, u64 c, u64 at, u64 o);
+u32 w2c_wasi__snapshot__preview1_fd_read(struct w2c_wasi__snapshot__preview1 *h, u32 fd, u64 v, u64 c, u64 o);
+u32 w2c_wasi__snapshot__preview1_fd_seek(struct w2c_wasi__snapshot__preview1 *h, u32 fd, u64 offset, u32 whence, u64 out);
+u32 w2c_wasi__snapshot__preview1_fd_write(struct w2c_wasi__snapshot__preview1 *host, u32 fd, u64 vectors, u64 count, u64 written);
+
 #ifdef __cplusplus
 }
 #endif

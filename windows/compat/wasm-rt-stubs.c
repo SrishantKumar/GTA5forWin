@@ -162,3 +162,4 @@ uint32_t w2c_env_0x5F_syscall_sendto(void *h, ...) { (void)h; return (uint32_t)-
 uint32_t w2c_env_0x5F_syscall_setsockopt(void *h, ...) { (void)h; return (uint32_t)-1; }
 uint32_t w2c_env_0x5F_syscall_shutdown(void *h, ...) { (void)h; return (uint32_t)-1; }
 uint32_t w2c_env_0x5F_syscall_socket(void *h, ...) { (void)h; return (uint32_t)-1; }
+void w2c_game_0x5Femscripten_run_js_on_main_thread_done(void *inst, ...) { (void)inst; }
