@@ -25,6 +25,16 @@ for path in sorted((root / 'Generated').glob('game_*.c')):
         path.write_text(s.replace(OLD, NEW)); functions += n; files += 1
 done = sum(p.read_text().count(NEW) for p in (root / 'Generated').glob('game_*.c'))
 # The helpers: shared (atomic) and plain accesses address the memory through the function's local base.
+MACRO_DEF = """#ifndef PG_MEM_ADDR
+#if defined(PG_LOCAL_MEMORY_BASE) && PG_LOCAL_MEMORY_BASE
+#define PG_FUNCTION_MEMORY_BASE(instance) ((uint8_t *)(void *)(instance)->w2c_env_memory->data)
+#define PG_MEM_ADDR(base, mem, addr, n) ((base) ? (&(base)[addr]) : ((uint8_t *)(mem)->data + (addr)))
+#else
+#define PG_FUNCTION_MEMORY_BASE(instance) NULL
+#define PG_MEM_ADDR(base, mem, addr, n) ((uint8_t *)(mem)->data + (addr))
+#endif
+#endif
+"""
 helpers = 0
 for name in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h']:
     path = root / 'Generated' / name
@@ -34,6 +44,10 @@ for name in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h']:
     if name == 'game-plain-impl.h':   # its helpers name the base parameter "base"
         t = t.replace('PG_MEM_ADDR(wasm_rt_local_memory_base, mem,', 'PG_MEM_ADDR(base, mem,')
         t = t.replace('(void)base; ', '')
+    if name in ['game-impl.h', 'game-heap-impl.h'] and '#ifndef PG_MEM_ADDR' not in t:
+        anchor = '#define MEM_ADDR(mem, addr, n) &((mem)->data[addr])\n#endif\n'
+        if anchor in t:
+            t = t.replace(anchor, anchor + '\n' + MACRO_DEF + '\n', 1)
     if t != s: path.write_text(t); helpers += 1
 left = sum(len(re.findall(r'MEM_ADDR\(mem, addr, (?:sizeof\(t[12]\)|16)\)', (root / 'Generated' / n).read_text()))
            for n in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h'] if (root / 'Generated' / n).exists())

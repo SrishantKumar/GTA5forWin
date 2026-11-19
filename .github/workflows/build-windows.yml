@@ -56,6 +56,7 @@ jobs:
 
           if (Test-Path "app/Generated/game.h") {
             Write-Host "[SUCCESS] AOT Game Engine found! Compiling full native ~300 MB GTA5Port.exe"
+            python app/Scripts/prepare_memory_base.py
           } else {
             Write-Host "[INFO] AOT engine sources not present; compiling native host shell with stubs."
             python app/Scripts/stub_asi_natives.py
