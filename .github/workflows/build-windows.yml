@@ -14,64 +14,10 @@ on:
           - Release
           - RelWithDebInfo
           - Debug
-      game_wasm_url:
-        description: 'Direct download URL for game.wasm (optional: if not in repo)'
-        required: false
-        default: ''
-        type: string
 
 jobs:
-  generate-engine:
-    name: Generate Native AOT Engine (macOS)
-    runs-on: macos-13
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Run AOT Engine Generator
-        id: aot
-        run: |
-          if [ -f "game.wasm" ]; then
-            echo "Found game.wasm in repository root. Running AOT preparation..."
-            python3 app/Scripts/prepare_aot.py --wasm game.wasm
-            echo "has_engine=true" >> "$GITHUB_OUTPUT"
-          elif [ -n "${{ github.event.inputs.game_wasm_url }}" ]; then
-            echo "Downloading game.wasm from provided URL..."
-            python3 app/Scripts/prepare_aot.py --url "${{ github.event.inputs.game_wasm_url }}"
-            echo "has_engine=true" >> "$GITHUB_OUTPUT"
-          elif [ -f "app/Generated/game.h" ]; then
-            echo "Found pre-generated engine sources."
-            echo "has_engine=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "No game.wasm or URL provided; skipping AOT generation."
-            echo "has_engine=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Archive Generated Engine
-        if: steps.aot.outputs.has_engine == 'true'
-        run: |
-          tar -czf engine-generated.tar.gz \
-            app/Generated \
-            app/Tools/simde \
-            app/Tools/wabt-1.0.42/include \
-            app/Tools/wabt-1.0.42/share
-
-      - name: Upload Generated Engine Artifact
-        if: steps.aot.outputs.has_engine == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: aot-engine-sources
-          path: engine-generated.tar.gz
-          retention-days: 1
-
   build-windows:
     name: Build Native Windows x64 Executable
-    needs: [generate-engine]
     runs-on: windows-latest
 
     steps:
@@ -93,25 +39,24 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Download Generated Engine Artifact
-        continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          name: aot-engine-sources
-          path: .
-
-      - name: Unpack Engine Sources or Prepare Stubs
+      - name: Fetch Pre-Generated AOT Engine Sources
         shell: pwsh
         run: |
-          if (Test-Path "engine-generated.tar.gz") {
-            Write-Host "Unpacking AOT engine archive..."
+          $assetUrl = "https://github.com/SrishantKumar/GTA5forWin/releases/download/v0.1.0-assets/engine-generated.tar.gz"
+          Write-Host "Downloading precompiled AOT engine sources from $assetUrl..."
+          try {
+            Invoke-WebRequest -Uri $assetUrl -OutFile "engine-generated.tar.gz" -TimeoutSec 300
+            Write-Host "Unpacking engine sources..."
             tar -xzf engine-generated.tar.gz
             Remove-Item "engine-generated.tar.gz" -Force
+          } catch {
+            Write-Warning "Failed to download precompiled AOT engine sources: $_"
           }
+
           if (Test-Path "app/Generated/game.h") {
-            Write-Host "AOT Game Engine detected! Compiling full native ~300 MB GTA5Port.exe"
+            Write-Host "[SUCCESS] AOT Game Engine found! Compiling full native ~300 MB GTA5Port.exe"
           } else {
-            Write-Host "No AOT engine found; building native host shell with stubs."
+            Write-Host "[INFO] AOT engine sources not present; compiling native host shell with stubs."
             python app/Scripts/stub_asi_natives.py
           }
 
