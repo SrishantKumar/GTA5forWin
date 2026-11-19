@@ -37,6 +37,9 @@ static inline void wasm2c_game_instantiate(w2c_game *instance, struct w2c_env *e
 static inline void w2c_game_0x5Femscripten_thread_init(w2c_game *instance, uint64_t a, uint32_t b, uint32_t c, uint32_t d, uint64_t e, uint32_t f) {
     (void)instance; (void)a; (void)b; (void)c; (void)d; (void)e; (void)f;
 }
+static inline void w2c_game_0x5Femscripten_thread_exit(w2c_game *instance, uint32_t result) {
+    (void)instance; (void)result;
+}
 static inline void w2c_game_0x5Femscripten_tls_init(w2c_game *instance) {
     (void)instance;
 }

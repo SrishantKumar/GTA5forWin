@@ -37,7 +37,6 @@ uint64_t PGGPUTextureBytes(void) { return 0; }
 uint64_t PGGPUBufferBytes(void) { return 0; }
 uint64_t PGFrameRingBytes(void) { return 0; }
 uint64_t PGConstantCopyBytes(void) { return 0; }
-int PGMeshPageHandedBack(uint64_t offset) { (void)offset; return 0; }
 const char *pg_assets_manifest_override(void) { return NULL; }
 void pg_assets_configure(const char *manifest, const char *root) { (void)manifest; (void)root; }
 void pg_assets_prewarm(void) {}
@@ -152,3 +151,14 @@ uint64_t w2c_game_fn_vehicle_occupant(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_vehicle_seats(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_weapon_entity(void *inst, ...) { (void)inst; return 0; }
 uint64_t w2c_game_fn_zstd_decompress_stream(void *inst, ...) { (void)inst; return 0; }
+
+uint32_t w2c_env_0x5F_syscall_accept4(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_connect(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_getsockname(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_getsockopt(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_poll(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_recvfrom(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_sendto(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_setsockopt(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_shutdown(void *h, ...) { (void)h; return (uint32_t)-1; }
+uint32_t w2c_env_0x5F_syscall_socket(void *h, ...) { (void)h; return (uint32_t)-1; }

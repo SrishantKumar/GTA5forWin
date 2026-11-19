@@ -41,7 +41,8 @@ typedef enum {
   WASM_RT_EXTERNREF,
 } wasm_rt_type_t;
 
-typedef void *wasm_rt_func_type_t;
+typedef const char *wasm_rt_func_type_t;
+typedef void (*wasm_rt_function_ptr_t)(void);
 
 typedef struct {
   // data/data_end use volatile _Atomic uint8_t* on the macOS side; plain void*
@@ -60,8 +61,8 @@ typedef struct {
 typedef wasm_rt_shared_memory_t wasm_rt_memory_t;
 
 typedef struct {
-  uint32_t func_type;
-  void *func;
+  wasm_rt_func_type_t func_type;
+  wasm_rt_function_ptr_t func;
   void *module_instance;
 } wasm_rt_funcref_t;
 
