@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
+#define _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH 1
+#endif
+
 #if defined(_MSC_VER) || defined(__clang__)
 
 #ifndef _ENABLE_EXPERIMENTAL_C11_ATOMICS
