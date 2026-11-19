@@ -48,6 +48,11 @@ for name in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h']:
         anchor = '#define MEM_ADDR(mem, addr, n) &((mem)->data[addr])\n#endif\n'
         if anchor in t:
             t = t.replace(anchor, anchor + '\n' + MACRO_DEF + '\n', 1)
+    if '#include "NativeRuntime.h"' not in t:
+        if '#include "game.h"\n' in t:
+            t = t.replace('#include "game.h"\n', '#include "game.h"\n#include "NativeRuntime.h"\n', 1)
+        elif '#include <string.h>\n' in t:
+            t = t.replace('#include <string.h>\n', '#include <string.h>\n#include "NativeRuntime.h"\n', 1)
     if t != s: path.write_text(t); helpers += 1
 left = sum(len(re.findall(r'MEM_ADDR\(mem, addr, (?:sizeof\(t[12]\)|16)\)', (root / 'Generated' / n).read_text()))
            for n in ['game-impl.h', 'game-heap-impl.h', 'game-plain-impl.h'] if (root / 'Generated' / n).exists())
