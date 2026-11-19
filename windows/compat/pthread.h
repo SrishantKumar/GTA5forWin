@@ -237,4 +237,6 @@ static inline void pthread_exit(void *retval) {
 #ifdef __cplusplus
 }
 #endif
+#else
+#include_next <pthread.h>
 #endif
