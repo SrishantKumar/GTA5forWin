@@ -1,0 +1,25 @@
+# Never commit game files or anything generated from them.
+*.wasm
+*.rpf
+mirror/
+app/Generated/
+app/Tools/
+app/Build/
+app/Resources/manifest.json
+app/Resources/wgpu_worker.js
+app/*.xcodeproj
+*.ipa
+.DS_Store
+
+# Windows & CMake build directories
+build/
+build_win/
+dist/
+out/
+.vs/
+*.user
+*.suo
+*.pdb
+*.ilk
+*.obj
+*.exe

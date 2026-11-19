@@ -1,0 +1,140 @@
+#pragma once
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef HANDLE pthread_t;
+
+typedef struct {
+    size_t stackSize;
+} pthread_attr_t;
+
+typedef CRITICAL_SECTION pthread_mutex_t;
+typedef void *pthread_mutexattr_t;
+
+#define PTHREAD_MUTEX_INITIALIZER {(void*)-1, -1, 0, 0, 0, 0}
+
+typedef CONDITION_VARIABLE pthread_cond_t;
+typedef void *pthread_condattr_t;
+#define PTHREAD_COND_INITIALIZER {0}
+
+static inline int pthread_attr_init(pthread_attr_t *attr) {
+    if (attr) attr->stackSize = 0;
+    return 0;
+}
+
+static inline int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
+    if (attr) attr->stackSize = stacksize;
+    return 0;
+}
+
+static inline int pthread_attr_destroy(pthread_attr_t *attr) {
+    (void)attr;
+    return 0;
+}
+
+static inline int pthread_mutex_init(pthread_mutex_t *m, const pthread_mutexattr_t *a) {
+    (void)a;
+    InitializeCriticalSection(m);
+    return 0;
+}
+
+static inline int pthread_mutex_lock(pthread_mutex_t *m) {
+    EnterCriticalSection(m);
+    return 0;
+}
+
+static inline int pthread_mutex_unlock(pthread_mutex_t *m) {
+    LeaveCriticalSection(m);
+    return 0;
+}
+
+static inline int pthread_mutex_destroy(pthread_mutex_t *m) {
+    DeleteCriticalSection(m);
+    return 0;
+}
+
+static inline int pthread_cond_init(pthread_cond_t *c, const pthread_condattr_t *a) {
+    (void)a;
+    InitializeConditionVariable(c);
+    return 0;
+}
+
+static inline int pthread_cond_wait(pthread_cond_t *c, pthread_mutex_t *m) {
+    SleepConditionVariableCS(c, m, INFINITE);
+    return 0;
+}
+
+static inline int pthread_cond_signal(pthread_cond_t *c) {
+    WakeConditionVariable(c);
+    return 0;
+}
+
+static inline int pthread_cond_broadcast(pthread_cond_t *c) {
+    WakeAllConditionVariable(c);
+    return 0;
+}
+
+static inline int pthread_cond_destroy(pthread_cond_t *c) {
+    (void)c;
+    return 0;
+}
+
+typedef struct {
+    void *(*func)(void *);
+    void *arg;
+} pthread_trampoline_t;
+
+static inline DWORD WINAPI pthread_win32_entry(LPVOID param) {
+    pthread_trampoline_t *t = (pthread_trampoline_t *)param;
+    void *(*func)(void *) = t->func;
+    void *arg = t->arg;
+    free(t);
+    func(arg);
+    return 0;
+}
+
+static inline int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void *), void *arg) {
+    pthread_trampoline_t *t = (pthread_trampoline_t *)malloc(sizeof(pthread_trampoline_t));
+    if (!t) return -1;
+    t->func = start_routine;
+    t->arg = arg;
+
+    size_t stack = attr ? attr->stackSize : 0;
+    HANDLE h = CreateThread(NULL, stack, pthread_win32_entry, t, 0, NULL);
+    if (!h) {
+        free(t);
+        return -1;
+    }
+    if (thread) *thread = h;
+    return 0;
+}
+
+static inline int pthread_join(pthread_t thread, void **retval) {
+    (void)retval;
+    WaitForSingleObject(thread, INFINITE);
+    CloseHandle(thread);
+    return 0;
+}
+
+static inline int pthread_detach(pthread_t thread) {
+    CloseHandle(thread);
+    return 0;
+}
+
+static inline pthread_t pthread_self(void) {
+    return GetCurrentThread();
+}
+
+#ifdef __cplusplus
+}
+#endif
+#endif

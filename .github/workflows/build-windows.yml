@@ -1,0 +1,64 @@
+name: Build Windows Executable (GTA5forWin)
+
+# Manual trigger only - will NEVER run automatically on commits or pull requests
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Configuration'
+        required: true
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - RelWithDebInfo
+          - Debug
+
+jobs:
+  build-windows:
+    name: Build Native Windows x64 Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSVC Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.28.x'
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=${{ github.event.inputs.build_type || 'Release' }}
+
+      - name: Build GTA5Port.exe
+        run: |
+          cmake --build build --config ${{ github.event.inputs.build_type || 'Release' }} --parallel
+
+      - name: Locate & Stage Binary
+        id: stage
+        shell: pwsh
+        run: |
+          $bin = Get-ChildItem -Path build -Recurse -Filter "GTA5Port.exe" | Select-Object -First 1
+          if (-not $bin) {
+            Write-Error "GTA5Port.exe was not found in build directory!"
+            exit 1
+          }
+          Write-Host "Found binary at: $($bin.FullName)"
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item $bin.FullName -Destination dist\GTA5Port.exe
+          Copy-Item build_win.bat -Destination dist\build_win.bat -ErrorAction SilentlyContinue
+          Copy-Item WINDOWS_BUILD.md -Destination dist\README.txt -ErrorAction SilentlyContinue
+
+      - name: Upload Windows Executable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GTA5forWin-x64-${{ github.event.inputs.build_type || 'Release' }}
+          path: dist/*
+          if-no-files-found: error
