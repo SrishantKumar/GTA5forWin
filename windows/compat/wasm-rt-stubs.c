@@ -27,8 +27,6 @@ void wasm_rt_init_thread(void) {}
 void wasm_rt_free_thread(void) {}
 wasm_rt_trap_t wasm_rt_impl_try(void) { return WASM_RT_TRAP_NONE; }
 
-_Atomic uint64_t pgHeapRefusedAt = 0;
-
 const char *PGSelectedGameLanguage(void) {
   return "en";
 }
