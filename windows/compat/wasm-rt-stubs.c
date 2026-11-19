@@ -163,4 +163,9 @@ u32 w2c_env_0x5F_syscall_sendto(struct w2c_env *h, u32 a, u64 b, u64 c, u32 d, u
 u32 w2c_env_0x5F_syscall_setsockopt(struct w2c_env *h, u32 a, u32 b, u32 c, u64 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
 u32 w2c_env_0x5F_syscall_shutdown(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
 u32 w2c_env_0x5F_syscall_socket(struct w2c_env *h, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f) { (void)h;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f; return (u32)-1; }
-// w2c_game_0x5Femscripten_run_js_on_main_thread_done is a static inline in game.h — no stub needed.
+
+const char *pg_app_symbol(uintptr_t pc) {
+  (void)pc;
+  return NULL;
+}
+
