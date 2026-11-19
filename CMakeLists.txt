@@ -112,6 +112,7 @@ if(WIN32)
         winmm
         avrt
         synchronization
+        ws2_32
     )
 endif()
 
@@ -127,6 +128,7 @@ if(MSVC)
         /wd4244
         /wd4267
         /FImsvc_compat.h
+        $<$<AND:$<C_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:C>>:/experimental:c11atomics>
     )
 endif()
 

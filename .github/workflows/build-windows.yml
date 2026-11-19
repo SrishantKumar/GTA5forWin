@@ -34,8 +34,16 @@ jobs:
           cmake-version: '3.28.x'
 
       - name: Configure CMake
+        shell: pwsh
         run: |
-          cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=${{ github.event.inputs.build_type || 'Release' }}
+          $clangCl = Get-Command clang-cl -ErrorAction SilentlyContinue
+          if ($clangCl) {
+            Write-Host "Configuring with Clang-CL: $($clangCl.Source)"
+            cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=${{ github.event.inputs.build_type || 'Release' }} -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+          } else {
+            Write-Host "Configuring with standard MSVC cl.exe"
+            cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=${{ github.event.inputs.build_type || 'Release' }}
+          }
 
       - name: Build GTA5Port.exe
         run: |

@@ -1,3 +1,19 @@
+#ifdef _WIN32
+#include "BCTextureDecoder.h"
+#include <stdlib.h>
+
+void *PGDecodeBC(int format,uint32_t width,uint32_t height,uint32_t depth,uint32_t rowPitch,uint32_t rowsPerImage,const void *source,size_t sourceSize,size_t *decodedSize) {
+    (void)format; (void)width; (void)height; (void)depth; (void)rowPitch; (void)rowsPerImage; (void)source; (void)sourceSize;
+    if (decodedSize) *decodedSize = 0;
+    return NULL;
+}
+
+void *PGDecodeBCReference(int format,uint32_t width,uint32_t height,uint32_t depth,uint32_t rowPitch,uint32_t rowsPerImage,const void *source,size_t sourceSize,size_t *decodedSize) {
+    (void)format; (void)width; (void)height; (void)depth; (void)rowPitch; (void)rowsPerImage; (void)source; (void)sourceSize;
+    if (decodedSize) *decodedSize = 0;
+    return NULL;
+}
+#else
 #include "BCTextureDecoder.h"
 #include <stdlib.h>
 #include <string.h>
@@ -58,3 +74,4 @@ void *PGDecodeBC(int format,uint32_t width,uint32_t height,uint32_t depth,uint32
   }
   *decodedSize=bytes;return decoded;
 }
+#endif

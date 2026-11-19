@@ -1,6 +1,10 @@
 #pragma once
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__clang__)
+
+#ifndef _ENABLE_EXPERIMENTAL_C11_ATOMICS
+#define _ENABLE_EXPERIMENTAL_C11_ATOMICS 1
+#endif
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -19,13 +23,19 @@
 #include <time.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <direct.h>
 #include <io.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #ifndef __attribute__
+#ifdef _MSC_VER
+#ifndef __clang__
 #define __attribute__(x)
+#endif
+#endif
 #endif
 
 #ifndef __builtin_expect
@@ -33,7 +43,11 @@
 #endif
 
 #ifndef __builtin_unreachable
+#ifdef _MSC_VER
 #define __builtin_unreachable() __assume(0)
+#else
+#define __builtin_unreachable() __builtin_unreachable()
+#endif
 #endif
 
 #ifndef __builtin_available
@@ -68,6 +82,14 @@
 #define strncasecmp _strnicmp
 #endif
 
+#ifndef bzero
+#define bzero(b, len) memset((b), 0, (len))
+#endif
+
+#ifndef bcopy
+#define bcopy(b1, b2, len) memmove((b2), (b1), (len))
+#endif
+
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
 #endif
@@ -78,9 +100,30 @@
 #define CLOCK_UPTIME_RAW 2
 #endif
 
+#define _SC_PAGESIZE 30
+#define _SC_PAGE_SIZE _SC_PAGESIZE
+#define _SC_NPROCESSORS_ONLN 84
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static inline int getpagesize(void) {
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return (int)si.dwPageSize;
+}
+
+static inline long sysconf(int name) {
+    if (name == _SC_PAGESIZE) {
+        return getpagesize();
+    } else if (name == _SC_NPROCESSORS_ONLN) {
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        return (long)si.dwNumberOfProcessors;
+    }
+    return -1;
+}
 
 static inline int clock_gettime(int clock_id, struct timespec *tp) {
     if (!tp) return -1;
@@ -118,8 +161,63 @@ static inline uint64_t clock_gettime_nsec_np(int clock_id) {
     return (uint64_t)(((double)count.QuadPart / (double)freq.QuadPart) * 1e9);
 }
 
+static inline int nanosleep(const struct timespec *req, struct timespec *rem) {
+    (void)rem;
+    if (!req) return -1;
+    DWORD ms = (DWORD)(req->tv_sec * 1000 + (req->tv_nsec / 1000000));
+    if (ms == 0 && req->tv_nsec > 0) ms = 1;
+    Sleep(ms);
+    return 0;
+}
+
+static inline int vasprintf(char **strp, const char *fmt, va_list ap) {
+    if (!strp || !fmt) return -1;
+    va_list ap_copy;
+    va_copy(ap_copy, ap);
+    int len = vsnprintf(NULL, 0, fmt, ap_copy);
+    va_end(ap_copy);
+    if (len < 0) return -1;
+    char *buf = (char *)malloc((size_t)len + 1);
+    if (!buf) return -1;
+    int written = vsnprintf(buf, (size_t)len + 1, fmt, ap);
+    if (written < 0) { free(buf); return -1; }
+    *strp = buf;
+    return written;
+}
+
+static inline int asprintf(char **strp, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = vasprintf(strp, fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+static inline char *strndup(const char *s, size_t n) {
+    if (!s) return NULL;
+    size_t len = 0;
+    while (len < n && s[len]) len++;
+    char *ret = (char *)malloc(len + 1);
+    if (!ret) return NULL;
+    memcpy(ret, s, len);
+    ret[len] = '\0';
+    return ret;
+}
+
+static inline void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen) {
+    if (!haystack || !needle || needlelen == 0 || haystacklen < needlelen) return NULL;
+    const unsigned char *h = (const unsigned char *)haystack;
+    const unsigned char *n = (const unsigned char *)needle;
+    for (size_t i = 0; i <= haystacklen - needlelen; i++) {
+        if (h[i] == n[0] && memcmp(h + i, n, needlelen) == 0) {
+            return (void *)(h + i);
+        }
+    }
+    return NULL;
+}
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // _MSC_VER
+#endif // _MSC_VER || __clang__
