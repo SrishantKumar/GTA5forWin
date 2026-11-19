@@ -1,5 +1,4 @@
 # Never commit game files or anything generated from them.
-*.wasm
 *.rpf
 mirror/
 app/Generated/

@@ -241,6 +241,7 @@ def find_game_wasm(options):
     # Try common local defaults
     defaults = [
         Path('/Volumes/Zebronics/GTV-5/b/8b0b5899ed/game.wasm'),
+        root.parent / 'game.wasm',
         root.parent / 'b/8b0b5899ed/game.wasm',
         root / 'b/8b0b5899ed/game.wasm',
         root / 'game.wasm',
