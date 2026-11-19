@@ -271,6 +271,7 @@ static void ExecuteRingPacket(uint32_t op, const uint32_t *p, uint32_t n) {
         case CREATE_TEXTURE: {
             uint32_t id = p[0];
             uint32_t dim = p[1];
+            (void)dim;
             uint32_t width = p[2];
             uint32_t height = p[3];
             uint32_t dxgi = p[7];

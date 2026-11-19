@@ -8,6 +8,7 @@
 #include <string.h>
 
 struct dirent {
+    uint64_t d_ino;
     char d_name[MAX_PATH];
     unsigned char d_type;
 };
@@ -68,6 +69,11 @@ static inline struct dirent *readdir(DIR *dir) {
         dir->ent.d_type = (dir->findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? DT_DIR : DT_REG;
         return &dir->ent;
     }
+}
+
+static inline DIR *fdopendir(int fd) {
+    (void)fd;
+    return NULL;
 }
 
 static inline int closedir(DIR *dir) {

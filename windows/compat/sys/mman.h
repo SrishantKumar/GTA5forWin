@@ -5,6 +5,7 @@
 #endif
 #include <windows.h>
 #include <stddef.h>
+#include <string.h>
 
 #define PROT_NONE  0
 #define PROT_READ  1
@@ -17,6 +18,18 @@
 #define MAP_ANON      0x20
 #define MAP_ANONYMOUS MAP_ANON
 #define MAP_FAILED    ((void *)-1)
+
+#define MADV_NORMAL        0
+#define MADV_RANDOM        1
+#define MADV_SEQUENTIAL    2
+#define MADV_WILLNEED      3
+#define MADV_DONTNEED      4
+#define MADV_FREE          5
+#define MADV_FREE_REUSABLE 6
+#define MADV_FREE_REUSE    7
+
+#define MINCORE_INCORE    0x1
+#define MINCORE_PAGED_OUT 0x2
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +57,22 @@ static inline int mprotect(void *addr, size_t len, int prot) {
     else if (prot & PROT_READ) flProtect = PAGE_READONLY;
     DWORD oldProtect;
     return VirtualProtect(addr, len, flProtect, &oldProtect) ? 0 : -1;
+}
+
+static inline int madvise(void *addr, size_t len, int advice) {
+    if (advice == MADV_DONTNEED || advice == MADV_FREE || advice == MADV_FREE_REUSABLE) {
+        VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
+    }
+    return 0;
+}
+
+static inline int mincore(void *addr, size_t len, unsigned char *vec) {
+    (void)addr;
+    if (vec && len) {
+        size_t pages = (len + 4095) / 4096;
+        memset(vec, MINCORE_INCORE, pages);
+    }
+    return 0;
 }
 
 #ifdef __cplusplus

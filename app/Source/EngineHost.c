@@ -625,7 +625,11 @@ static void writeTM(struct w2c_env *host, uint64_t at, const struct tm *time) {
   out[0] = time->tm_sec; out[1] = time->tm_min; out[2] = time->tm_hour;
   out[3] = time->tm_mday; out[4] = time->tm_mon; out[5] = time->tm_year;
   out[6] = time->tm_wday; out[7] = time->tm_yday; out[8] = time->tm_isdst;
+#ifdef _WIN32
+  *(int64_t *)((uint8_t *)out + 40) = pg_get_gmtoff(time);
+#else
   *(int64_t *)((uint8_t *)out + 40) = time->tm_gmtoff;
+#endif
 }
 u32 w2c_env_0x5Fgmtime_js(struct w2c_env *host, u64 seconds, u64 at) {
   time_t value = (int64_t)seconds;
@@ -656,6 +660,15 @@ void w2c_env_0x5Ftzset_js(struct w2c_env *host, u64 zone, u64 daylight, u64 stan
   time_t now = time(NULL);
   struct tm current, january = {0}, july = {0};
   localtime_r(&now, &current);
+#ifdef _WIN32
+  long gmtoff = pg_get_gmtoff(&current);
+  *(int64_t *)pg_pointer(host, zone, 8) = -gmtoff;
+  *(int32_t *)pg_pointer(host, daylight, 4) = current.tm_isdst > 0;
+  char *stdName = pg_pointer(host, standardName, 17);
+  char *dstName = pg_pointer(host, daylightName, 17);
+  snprintf(stdName, 17, "UTC");
+  snprintf(dstName, 17, "UTC");
+#else
   january.tm_year = july.tm_year = current.tm_year;
   january.tm_mday = july.tm_mday = 1;
   january.tm_isdst = july.tm_isdst = -1;
@@ -669,6 +682,7 @@ void w2c_env_0x5Ftzset_js(struct w2c_env *host, u64 zone, u64 daylight, u64 stan
   char *dstName = pg_pointer(host, daylightName, 17);
   snprintf(stdName, 17, "%s", standard->tm_zone ? standard->tm_zone : "UTC");
   snprintf(dstName, 17, "%s", summer->tm_zone ? summer->tm_zone : "UTC");
+#endif
 }
 
 u32 w2c_env_wasm_httpfs_manifest_js(struct w2c_env *host, u64 address, u32 capacity) {

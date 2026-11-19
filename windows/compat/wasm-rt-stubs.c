@@ -1,9 +1,12 @@
 #include "wasm-rt.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 void wasm_rt_trap(wasm_rt_trap_t trap) {
-  fprintf(stderr, "[WASM-RT TRAP] code: %d\n", trap);
+  fprintf(stderr, "[WASM-RT TRAP] code: %d
+", trap);
 }
 
 const char *wasm_rt_strerror(wasm_rt_trap_t trap) {
@@ -24,3 +27,108 @@ void wasm_rt_init(void) {}
 void wasm_rt_init_thread(void) {}
 void wasm_rt_free_thread(void) {}
 wasm_rt_trap_t wasm_rt_impl_try(void) { return WASM_RT_TRAP_NONE; }
+
+_Atomic uint64_t pgHeapRefusedAt = 0;
+
+const char *PGSelectedGameLanguage(void) {
+  return "en";
+}
+
+uint64_t PGGPUTextureBytes(void) { return 0; }
+uint64_t PGGPUBufferBytes(void) { return 0; }
+uint64_t PGFrameRingBytes(void) { return 0; }
+uint64_t PGConstantCopyBytes(void) { return 0; }
+int PGMeshPageHandedBack(uint64_t offset) { (void)offset; return 0; }
+const char *pg_assets_manifest_override(void) { return NULL; }
+
+uint64_t w2c_game_fn_begin_low_quality_photo_copy(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_begin_take_high_quality_photo(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_buddy_get_size(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_clear_wanted(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_clear_weather(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_clear_weather_override(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_create_vehicle(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_current_script_handler(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_delete_vehicle(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_dirty_adv_gfx_settings(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_dirty_gfx_settings(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_do_auto_save(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_entity_exists(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_entity_owned(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_current_ped_vehicle_weapon(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_entity_coords(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_entity_heading(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_entity_model(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_entity_speed(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_max_wanted(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_ped_drawable(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_ped_texture(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_player_invincible(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_get_wanted(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_give_weapon(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_ground_vehicle(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_hash_string_try_get(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_has_model_loaded(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_inflate(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_instructional_button(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_is_vehicle_model(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_load_scene_is_loaded(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_load_scene_start(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_lod_scale_this_frame(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_low_quality_photo_copy_status(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_menu_graphics_settings(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_model_info_at_index(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_operator_delete(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_operator_new(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_opus_decode_frame(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_parked_density_this_frame(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_ped_density_this_frame(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_ped_vehicle(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_player_id(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_player_ped_id(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_play_movie(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_preload_movie(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_profile_settings_set(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_reduce_ped_model_budget(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_reduce_vehicle_model_budget(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_release_model(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_repair_vehicle(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_request_model(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_request_scaleform_movie(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_resolution_index(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_sbrk(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_selected_weapon(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_clock(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_current_ped_vehicle_weapon(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_entity_coords_no_offset(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_entity_health(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_max_wanted(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_menu_preference(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_ped_into_vehicle(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_player_invincible(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_tv_channel(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_set_weather(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_stat_get_int(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_stat_set_int(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_stream_in_image(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_stream_object_name(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_stream_physical_size(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_stream_virtual_size(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_sys_ipc_sleep(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_take_high_quality_photo_status(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_tv_current_show_hash(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_tv_scale_to_real_time(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_tv_setup_lester1(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_tv_show_duration(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_tv_show_play_time(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_txd_find_slot(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_ui_settings(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_vehicle_class(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_vehicle_density_this_frame(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_vehicle_dirt(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_vehicle_engine_health(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_vehicle_label(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_vehicle_occupant(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_vehicle_seats(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_weapon_entity(void *inst, ...) { (void)inst; return 0; }
+uint64_t w2c_game_fn_zstd_decompress_stream(void *inst, ...) { (void)inst; return 0; }

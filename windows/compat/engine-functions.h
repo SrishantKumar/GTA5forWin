@@ -2,295 +2,94 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-static inline uint64_t _pg_dummy_stub(void *instance, ...) { (void)instance; return 0; }
-
-#ifndef PG_FN_BEGIN_LOW_QUALITY_PHOTO_COPY
-#define PG_FN_BEGIN_LOW_QUALITY_PHOTO_COPY _pg_dummy_stub
-#endif
-#ifndef PG_FN_BEGIN_TAKE_HIGH_QUALITY_PHOTO
-#define PG_FN_BEGIN_TAKE_HIGH_QUALITY_PHOTO _pg_dummy_stub
-#endif
-#ifndef PG_FN_BUDDY_GET_SIZE
-#define PG_FN_BUDDY_GET_SIZE _pg_dummy_stub
-#endif
-#ifndef PG_FN_CLEAR_WANTED
-#define PG_FN_CLEAR_WANTED _pg_dummy_stub
-#endif
-#ifndef PG_FN_CLEAR_WEATHER
-#define PG_FN_CLEAR_WEATHER _pg_dummy_stub
-#endif
-#ifndef PG_FN_CLEAR_WEATHER_OVERRIDE
-#define PG_FN_CLEAR_WEATHER_OVERRIDE _pg_dummy_stub
-#endif
-#ifndef PG_FN_CREATE_VEHICLE
-#define PG_FN_CREATE_VEHICLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_CURRENT_SCRIPT_HANDLER
-#define PG_FN_CURRENT_SCRIPT_HANDLER _pg_dummy_stub
-#endif
-#ifndef PG_FN_DELETE_VEHICLE
-#define PG_FN_DELETE_VEHICLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_DIRTY_ADV_GFX_SETTINGS
-#define PG_FN_DIRTY_ADV_GFX_SETTINGS _pg_dummy_stub
-#endif
-#ifndef PG_FN_DIRTY_GFX_SETTINGS
-#define PG_FN_DIRTY_GFX_SETTINGS _pg_dummy_stub
-#endif
-#ifndef PG_FN_DO_AUTO_SAVE
-#define PG_FN_DO_AUTO_SAVE _pg_dummy_stub
-#endif
-#ifndef PG_FN_ENTITY_EXISTS
-#define PG_FN_ENTITY_EXISTS _pg_dummy_stub
-#endif
-#ifndef PG_FN_ENTITY_OWNED
-#define PG_FN_ENTITY_OWNED _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_CURRENT_PED_VEHICLE_WEAPON
-#define PG_FN_GET_CURRENT_PED_VEHICLE_WEAPON _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_ENTITY_COORDS
-#define PG_FN_GET_ENTITY_COORDS _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_ENTITY_HEADING
-#define PG_FN_GET_ENTITY_HEADING _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_ENTITY_MODEL
-#define PG_FN_GET_ENTITY_MODEL _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_ENTITY_SPEED
-#define PG_FN_GET_ENTITY_SPEED _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_MAX_WANTED
-#define PG_FN_GET_MAX_WANTED _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_PED_DRAWABLE
-#define PG_FN_GET_PED_DRAWABLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_PED_TEXTURE
-#define PG_FN_GET_PED_TEXTURE _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_PLAYER_INVINCIBLE
-#define PG_FN_GET_PLAYER_INVINCIBLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_GET_WANTED
-#define PG_FN_GET_WANTED _pg_dummy_stub
-#endif
-#ifndef PG_FN_GIVE_WEAPON
-#define PG_FN_GIVE_WEAPON _pg_dummy_stub
-#endif
-#ifndef PG_FN_GROUND_VEHICLE
-#define PG_FN_GROUND_VEHICLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_HASH_STRING_TRY_GET
-#define PG_FN_HASH_STRING_TRY_GET _pg_dummy_stub
-#endif
-#ifndef PG_FN_HAS_MODEL_LOADED
-#define PG_FN_HAS_MODEL_LOADED _pg_dummy_stub
-#endif
-#ifndef PG_FN_INFLATE
-#define PG_FN_INFLATE _pg_dummy_stub
-#endif
-#ifndef PG_FN_INSTRUCTIONAL_BUTTON
-#define PG_FN_INSTRUCTIONAL_BUTTON _pg_dummy_stub
-#endif
-#ifndef PG_FN_IS_VEHICLE_MODEL
-#define PG_FN_IS_VEHICLE_MODEL _pg_dummy_stub
-#endif
-#ifndef PG_FN_LOAD_SCENE_IS_LOADED
-#define PG_FN_LOAD_SCENE_IS_LOADED _pg_dummy_stub
-#endif
-#ifndef PG_FN_LOAD_SCENE_START
-#define PG_FN_LOAD_SCENE_START _pg_dummy_stub
-#endif
-#ifndef PG_FN_LOD_SCALE_THIS_FRAME
-#define PG_FN_LOD_SCALE_THIS_FRAME _pg_dummy_stub
-#endif
-#ifndef PG_FN_LOW_QUALITY_PHOTO_COPY_STATUS
-#define PG_FN_LOW_QUALITY_PHOTO_COPY_STATUS _pg_dummy_stub
-#endif
-#ifndef PG_FN_MENU_GRAPHICS_SETTINGS
-#define PG_FN_MENU_GRAPHICS_SETTINGS _pg_dummy_stub
-#endif
-#ifndef PG_FN_MODEL_INFO_AT_INDEX
-#define PG_FN_MODEL_INFO_AT_INDEX _pg_dummy_stub
-#endif
-#ifndef PG_FN_OPERATOR_DELETE
-#define PG_FN_OPERATOR_DELETE _pg_dummy_stub
-#endif
-#ifndef PG_FN_OPERATOR_NEW
-#define PG_FN_OPERATOR_NEW _pg_dummy_stub
-#endif
-#ifndef PG_FN_OPUS_DECODE_FRAME
-#define PG_FN_OPUS_DECODE_FRAME _pg_dummy_stub
-#endif
-#ifndef PG_FN_PARKED_DENSITY_THIS_FRAME
-#define PG_FN_PARKED_DENSITY_THIS_FRAME _pg_dummy_stub
-#endif
-#ifndef PG_FN_PED_DENSITY_THIS_FRAME
-#define PG_FN_PED_DENSITY_THIS_FRAME _pg_dummy_stub
-#endif
-#ifndef PG_FN_PED_VEHICLE
-#define PG_FN_PED_VEHICLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_PLAYER_ID
-#define PG_FN_PLAYER_ID _pg_dummy_stub
-#endif
-#ifndef PG_FN_PLAYER_PED_ID
-#define PG_FN_PLAYER_PED_ID _pg_dummy_stub
-#endif
-#ifndef PG_FN_PLAY_MOVIE
-#define PG_FN_PLAY_MOVIE _pg_dummy_stub
-#endif
-#ifndef PG_FN_PRELOAD_MOVIE
-#define PG_FN_PRELOAD_MOVIE _pg_dummy_stub
-#endif
-#ifndef PG_FN_PROFILE_SETTINGS_SET
-#define PG_FN_PROFILE_SETTINGS_SET _pg_dummy_stub
-#endif
-#ifndef PG_FN_REDUCE_PED_MODEL_BUDGET
-#define PG_FN_REDUCE_PED_MODEL_BUDGET _pg_dummy_stub
-#endif
-#ifndef PG_FN_REDUCE_VEHICLE_MODEL_BUDGET
-#define PG_FN_REDUCE_VEHICLE_MODEL_BUDGET _pg_dummy_stub
-#endif
-#ifndef PG_FN_RELEASE_MODEL
-#define PG_FN_RELEASE_MODEL _pg_dummy_stub
-#endif
-#ifndef PG_FN_REPAIR_VEHICLE
-#define PG_FN_REPAIR_VEHICLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_REQUEST_MODEL
-#define PG_FN_REQUEST_MODEL _pg_dummy_stub
-#endif
-#ifndef PG_FN_REQUEST_SCALEFORM_MOVIE
-#define PG_FN_REQUEST_SCALEFORM_MOVIE _pg_dummy_stub
-#endif
-#ifndef PG_FN_RESOLUTION_INDEX
-#define PG_FN_RESOLUTION_INDEX _pg_dummy_stub
-#endif
-#ifndef PG_FN_SBRK
-#define PG_FN_SBRK _pg_dummy_stub
-#endif
-#ifndef PG_FN_SELECTED_WEAPON
-#define PG_FN_SELECTED_WEAPON _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_CLOCK
-#define PG_FN_SET_CLOCK _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_CURRENT_PED_VEHICLE_WEAPON
-#define PG_FN_SET_CURRENT_PED_VEHICLE_WEAPON _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_ENTITY_COORDS_NO_OFFSET
-#define PG_FN_SET_ENTITY_COORDS_NO_OFFSET _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_ENTITY_HEALTH
-#define PG_FN_SET_ENTITY_HEALTH _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_MAX_WANTED
-#define PG_FN_SET_MAX_WANTED _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_MENU_PREFERENCE
-#define PG_FN_SET_MENU_PREFERENCE _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_PED_INTO_VEHICLE
-#define PG_FN_SET_PED_INTO_VEHICLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_PLAYER_INVINCIBLE
-#define PG_FN_SET_PLAYER_INVINCIBLE _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_TV_CHANNEL
-#define PG_FN_SET_TV_CHANNEL _pg_dummy_stub
-#endif
-#ifndef PG_FN_SET_WEATHER
-#define PG_FN_SET_WEATHER _pg_dummy_stub
-#endif
-#ifndef PG_FN_STAT_GET_INT
-#define PG_FN_STAT_GET_INT _pg_dummy_stub
-#endif
-#ifndef PG_FN_STAT_SET_INT
-#define PG_FN_STAT_SET_INT _pg_dummy_stub
-#endif
-#ifndef PG_FN_STREAM_IN_IMAGE
-#define PG_FN_STREAM_IN_IMAGE _pg_dummy_stub
-#endif
-#ifndef PG_FN_STREAM_OBJECT_NAME
-#define PG_FN_STREAM_OBJECT_NAME _pg_dummy_stub
-#endif
-#ifndef PG_FN_STREAM_PHYSICAL_SIZE
-#define PG_FN_STREAM_PHYSICAL_SIZE _pg_dummy_stub
-#endif
-#ifndef PG_FN_STREAM_VIRTUAL_SIZE
-#define PG_FN_STREAM_VIRTUAL_SIZE _pg_dummy_stub
-#endif
-#ifndef PG_FN_SYS_IPC_SLEEP
-#define PG_FN_SYS_IPC_SLEEP _pg_dummy_stub
-#endif
-#ifndef PG_FN_TAKE_HIGH_QUALITY_PHOTO_STATUS
-#define PG_FN_TAKE_HIGH_QUALITY_PHOTO_STATUS _pg_dummy_stub
-#endif
-#ifndef PG_FN_TV_CURRENT_SHOW_HASH
-#define PG_FN_TV_CURRENT_SHOW_HASH _pg_dummy_stub
-#endif
-#ifndef PG_FN_TV_SCALE_TO_REAL_TIME
-#define PG_FN_TV_SCALE_TO_REAL_TIME _pg_dummy_stub
-#endif
-#ifndef PG_FN_TV_SETUP_LESTER1
-#define PG_FN_TV_SETUP_LESTER1 _pg_dummy_stub
-#endif
-#ifndef PG_FN_TV_SHOW_DURATION
-#define PG_FN_TV_SHOW_DURATION _pg_dummy_stub
-#endif
-#ifndef PG_FN_TV_SHOW_PLAY_TIME
-#define PG_FN_TV_SHOW_PLAY_TIME _pg_dummy_stub
-#endif
-#ifndef PG_FN_TXD_FIND_SLOT
-#define PG_FN_TXD_FIND_SLOT _pg_dummy_stub
-#endif
-#ifndef PG_FN_UI_SETTINGS
-#define PG_FN_UI_SETTINGS _pg_dummy_stub
-#endif
-#ifndef PG_FN_VEHICLE_CLASS
-#define PG_FN_VEHICLE_CLASS _pg_dummy_stub
-#endif
-#ifndef PG_FN_VEHICLE_DENSITY_THIS_FRAME
-#define PG_FN_VEHICLE_DENSITY_THIS_FRAME _pg_dummy_stub
-#endif
-#ifndef PG_FN_VEHICLE_DIRT
-#define PG_FN_VEHICLE_DIRT _pg_dummy_stub
-#endif
-#ifndef PG_FN_VEHICLE_ENGINE_HEALTH
-#define PG_FN_VEHICLE_ENGINE_HEALTH _pg_dummy_stub
-#endif
-#ifndef PG_FN_VEHICLE_LABEL
-#define PG_FN_VEHICLE_LABEL _pg_dummy_stub
-#endif
-#ifndef PG_FN_VEHICLE_OCCUPANT
-#define PG_FN_VEHICLE_OCCUPANT _pg_dummy_stub
-#endif
-#ifndef PG_FN_VEHICLE_SEATS
-#define PG_FN_VEHICLE_SEATS _pg_dummy_stub
-#endif
-#ifndef PG_FN_WEAPON_ENTITY
-#define PG_FN_WEAPON_ENTITY _pg_dummy_stub
-#endif
-#ifndef PG_FN_ZSTD_DECOMPRESS_STREAM
-#define PG_FN_ZSTD_DECOMPRESS_STREAM _pg_dummy_stub
-#endif
-#ifndef PG_FN_OPERATOR_NEW
-#define PG_FN_OPERATOR_NEW _pg_dummy_stub
-#endif
-#ifndef PG_FN_OPERATOR_DELETE
-#define PG_FN_OPERATOR_DELETE _pg_dummy_stub
-#endif
-#ifndef PG_FN_SBRK
-#define PG_FN_SBRK _pg_dummy_stub
-#endif
-
-#ifdef __cplusplus
-}
-#endif
+#define PG_FN_BEGIN_LOW_QUALITY_PHOTO_COPY w2c_game_fn_begin_low_quality_photo_copy
+#define PG_FN_BEGIN_TAKE_HIGH_QUALITY_PHOTO w2c_game_fn_begin_take_high_quality_photo
+#define PG_FN_BUDDY_GET_SIZE w2c_game_fn_buddy_get_size
+#define PG_FN_CLEAR_WANTED w2c_game_fn_clear_wanted
+#define PG_FN_CLEAR_WEATHER w2c_game_fn_clear_weather
+#define PG_FN_CLEAR_WEATHER_OVERRIDE w2c_game_fn_clear_weather_override
+#define PG_FN_CREATE_VEHICLE w2c_game_fn_create_vehicle
+#define PG_FN_CURRENT_SCRIPT_HANDLER w2c_game_fn_current_script_handler
+#define PG_FN_DELETE_VEHICLE w2c_game_fn_delete_vehicle
+#define PG_FN_DIRTY_ADV_GFX_SETTINGS w2c_game_fn_dirty_adv_gfx_settings
+#define PG_FN_DIRTY_GFX_SETTINGS w2c_game_fn_dirty_gfx_settings
+#define PG_FN_DO_AUTO_SAVE w2c_game_fn_do_auto_save
+#define PG_FN_ENTITY_EXISTS w2c_game_fn_entity_exists
+#define PG_FN_ENTITY_OWNED w2c_game_fn_entity_owned
+#define PG_FN_GET_CURRENT_PED_VEHICLE_WEAPON w2c_game_fn_get_current_ped_vehicle_weapon
+#define PG_FN_GET_ENTITY_COORDS w2c_game_fn_get_entity_coords
+#define PG_FN_GET_ENTITY_HEADING w2c_game_fn_get_entity_heading
+#define PG_FN_GET_ENTITY_MODEL w2c_game_fn_get_entity_model
+#define PG_FN_GET_ENTITY_SPEED w2c_game_fn_get_entity_speed
+#define PG_FN_GET_MAX_WANTED w2c_game_fn_get_max_wanted
+#define PG_FN_GET_PED_DRAWABLE w2c_game_fn_get_ped_drawable
+#define PG_FN_GET_PED_TEXTURE w2c_game_fn_get_ped_texture
+#define PG_FN_GET_PLAYER_INVINCIBLE w2c_game_fn_get_player_invincible
+#define PG_FN_GET_WANTED w2c_game_fn_get_wanted
+#define PG_FN_GIVE_WEAPON w2c_game_fn_give_weapon
+#define PG_FN_GROUND_VEHICLE w2c_game_fn_ground_vehicle
+#define PG_FN_HASH_STRING_TRY_GET w2c_game_fn_hash_string_try_get
+#define PG_FN_HAS_MODEL_LOADED w2c_game_fn_has_model_loaded
+#define PG_FN_INFLATE w2c_game_fn_inflate
+#define PG_FN_INSTRUCTIONAL_BUTTON w2c_game_fn_instructional_button
+#define PG_FN_IS_VEHICLE_MODEL w2c_game_fn_is_vehicle_model
+#define PG_FN_LOAD_SCENE_IS_LOADED w2c_game_fn_load_scene_is_loaded
+#define PG_FN_LOAD_SCENE_START w2c_game_fn_load_scene_start
+#define PG_FN_LOD_SCALE_THIS_FRAME w2c_game_fn_lod_scale_this_frame
+#define PG_FN_LOW_QUALITY_PHOTO_COPY_STATUS w2c_game_fn_low_quality_photo_copy_status
+#define PG_FN_MENU_GRAPHICS_SETTINGS w2c_game_fn_menu_graphics_settings
+#define PG_FN_MODEL_INFO_AT_INDEX w2c_game_fn_model_info_at_index
+#define PG_FN_OPERATOR_DELETE w2c_game_fn_operator_delete
+#define PG_FN_OPERATOR_NEW w2c_game_fn_operator_new
+#define PG_FN_OPUS_DECODE_FRAME w2c_game_fn_opus_decode_frame
+#define PG_FN_PARKED_DENSITY_THIS_FRAME w2c_game_fn_parked_density_this_frame
+#define PG_FN_PED_DENSITY_THIS_FRAME w2c_game_fn_ped_density_this_frame
+#define PG_FN_PED_VEHICLE w2c_game_fn_ped_vehicle
+#define PG_FN_PLAYER_ID w2c_game_fn_player_id
+#define PG_FN_PLAYER_PED_ID w2c_game_fn_player_ped_id
+#define PG_FN_PLAY_MOVIE w2c_game_fn_play_movie
+#define PG_FN_PRELOAD_MOVIE w2c_game_fn_preload_movie
+#define PG_FN_PROFILE_SETTINGS_SET w2c_game_fn_profile_settings_set
+#define PG_FN_REDUCE_PED_MODEL_BUDGET w2c_game_fn_reduce_ped_model_budget
+#define PG_FN_REDUCE_VEHICLE_MODEL_BUDGET w2c_game_fn_reduce_vehicle_model_budget
+#define PG_FN_RELEASE_MODEL w2c_game_fn_release_model
+#define PG_FN_REPAIR_VEHICLE w2c_game_fn_repair_vehicle
+#define PG_FN_REQUEST_MODEL w2c_game_fn_request_model
+#define PG_FN_REQUEST_SCALEFORM_MOVIE w2c_game_fn_request_scaleform_movie
+#define PG_FN_RESOLUTION_INDEX w2c_game_fn_resolution_index
+#define PG_FN_SBRK w2c_game_fn_sbrk
+#define PG_FN_SELECTED_WEAPON w2c_game_fn_selected_weapon
+#define PG_FN_SET_CLOCK w2c_game_fn_set_clock
+#define PG_FN_SET_CURRENT_PED_VEHICLE_WEAPON w2c_game_fn_set_current_ped_vehicle_weapon
+#define PG_FN_SET_ENTITY_COORDS_NO_OFFSET w2c_game_fn_set_entity_coords_no_offset
+#define PG_FN_SET_ENTITY_HEALTH w2c_game_fn_set_entity_health
+#define PG_FN_SET_MAX_WANTED w2c_game_fn_set_max_wanted
+#define PG_FN_SET_MENU_PREFERENCE w2c_game_fn_set_menu_preference
+#define PG_FN_SET_PED_INTO_VEHICLE w2c_game_fn_set_ped_into_vehicle
+#define PG_FN_SET_PLAYER_INVINCIBLE w2c_game_fn_set_player_invincible
+#define PG_FN_SET_TV_CHANNEL w2c_game_fn_set_tv_channel
+#define PG_FN_SET_WEATHER w2c_game_fn_set_weather
+#define PG_FN_STAT_GET_INT w2c_game_fn_stat_get_int
+#define PG_FN_STAT_SET_INT w2c_game_fn_stat_set_int
+#define PG_FN_STREAM_IN_IMAGE w2c_game_fn_stream_in_image
+#define PG_FN_STREAM_OBJECT_NAME w2c_game_fn_stream_object_name
+#define PG_FN_STREAM_PHYSICAL_SIZE w2c_game_fn_stream_physical_size
+#define PG_FN_STREAM_VIRTUAL_SIZE w2c_game_fn_stream_virtual_size
+#define PG_FN_SYS_IPC_SLEEP w2c_game_fn_sys_ipc_sleep
+#define PG_FN_TAKE_HIGH_QUALITY_PHOTO_STATUS w2c_game_fn_take_high_quality_photo_status
+#define PG_FN_TV_CURRENT_SHOW_HASH w2c_game_fn_tv_current_show_hash
+#define PG_FN_TV_SCALE_TO_REAL_TIME w2c_game_fn_tv_scale_to_real_time
+#define PG_FN_TV_SETUP_LESTER1 w2c_game_fn_tv_setup_lester1
+#define PG_FN_TV_SHOW_DURATION w2c_game_fn_tv_show_duration
+#define PG_FN_TV_SHOW_PLAY_TIME w2c_game_fn_tv_show_play_time
+#define PG_FN_TXD_FIND_SLOT w2c_game_fn_txd_find_slot
+#define PG_FN_UI_SETTINGS w2c_game_fn_ui_settings
+#define PG_FN_VEHICLE_CLASS w2c_game_fn_vehicle_class
+#define PG_FN_VEHICLE_DENSITY_THIS_FRAME w2c_game_fn_vehicle_density_this_frame
+#define PG_FN_VEHICLE_DIRT w2c_game_fn_vehicle_dirt
+#define PG_FN_VEHICLE_ENGINE_HEALTH w2c_game_fn_vehicle_engine_health
+#define PG_FN_VEHICLE_LABEL w2c_game_fn_vehicle_label
+#define PG_FN_VEHICLE_OCCUPANT w2c_game_fn_vehicle_occupant
+#define PG_FN_VEHICLE_SEATS w2c_game_fn_vehicle_seats
+#define PG_FN_WEAPON_ENTITY w2c_game_fn_weapon_entity
+#define PG_FN_ZSTD_DECOMPRESS_STREAM w2c_game_fn_zstd_decompress_stream

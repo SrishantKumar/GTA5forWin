@@ -24,11 +24,16 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
+#include <setjmp.h>
 #include <direct.h>
 #include <io.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+
+#ifndef _longjmp
+#define _longjmp longjmp
+#endif
 
 #ifndef __attribute__
 #ifdef _MSC_VER
@@ -90,6 +95,8 @@
 #define bcopy(b1, b2, len) memmove((b2), (b1), (len))
 #endif
 
+typedef int clockid_t;
+
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
 #endif
@@ -107,6 +114,36 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static inline char *strcasestr(const char *haystack, const char *needle) {
+    if (!haystack || !needle) return NULL;
+    if (!*needle) return (char *)haystack;
+    size_t needle_len = strlen(needle);
+    for (; *haystack; haystack++) {
+        if (_strnicmp(haystack, needle, needle_len) == 0) {
+            return (char *)haystack;
+        }
+    }
+    return NULL;
+}
+
+static inline long pg_get_gmtoff(const struct tm *t) {
+    long tz = 0;
+    _get_timezone(&tz);
+    long dst = 0;
+    _get_dstbias(&dst);
+    return -(tz + (t && t->tm_isdst > 0 ? dst : 0));
+}
+
+static inline struct tm *gmtime_r(const time_t *timer, struct tm *buf) {
+    if (!timer || !buf) return NULL;
+    return gmtime_s(buf, timer) == 0 ? buf : NULL;
+}
+
+static inline struct tm *localtime_r(const time_t *timer, struct tm *buf) {
+    if (!timer || !buf) return NULL;
+    return localtime_s(buf, timer) == 0 ? buf : NULL;
+}
 
 static inline int getpagesize(void) {
     SYSTEM_INFO si;
@@ -138,7 +175,7 @@ static inline int clock_gettime(int clock_id, struct timespec *tp) {
         tp->tv_nsec = (long)((t % 10000000ULL) * 100ULL);
         return 0;
     } else {
-        static LARGE_INTEGER freq = {0};
+        static LARGE_INTEGER freq;
         if (freq.QuadPart == 0) {
             QueryPerformanceFrequency(&freq);
         }
@@ -152,7 +189,7 @@ static inline int clock_gettime(int clock_id, struct timespec *tp) {
 
 static inline uint64_t clock_gettime_nsec_np(int clock_id) {
     (void)clock_id;
-    static LARGE_INTEGER freq = {0};
+    static LARGE_INTEGER freq;
     if (freq.QuadPart == 0) {
         QueryPerformanceFrequency(&freq);
     }
@@ -214,6 +251,37 @@ static inline void *memmem(const void *haystack, size_t haystacklen, const void 
         }
     }
     return NULL;
+}
+
+#ifndef SSIZE_MAX
+#define SSIZE_MAX ((ssize_t)(SIZE_MAX >> 1))
+#endif
+
+typedef intptr_t ssize_t;
+
+static inline ssize_t pread(int fd, void *buf, size_t count, int64_t offset) {
+    HANDLE h = (HANDLE)_get_osfhandle(fd);
+    if (h == INVALID_HANDLE_VALUE) return -1;
+    OVERLAPPED ov = {0};
+    ov.Offset = (DWORD)(offset & 0xFFFFFFFF);
+    ov.OffsetHigh = (DWORD)((offset >> 32) & 0xFFFFFFFF);
+    DWORD read_bytes = 0;
+    if (!ReadFile(h, buf, (DWORD)count, &read_bytes, &ov)) {
+        if (GetLastError() == ERROR_HANDLE_EOF) return 0;
+        return -1;
+    }
+    return (ssize_t)read_bytes;
+}
+
+static inline ssize_t pwrite(int fd, const void *buf, size_t count, int64_t offset) {
+    HANDLE h = (HANDLE)_get_osfhandle(fd);
+    if (h == INVALID_HANDLE_VALUE) return -1;
+    OVERLAPPED ov = {0};
+    ov.Offset = (DWORD)(offset & 0xFFFFFFFF);
+    ov.OffsetHigh = (DWORD)((offset >> 32) & 0xFFFFFFFF);
+    DWORD written_bytes = 0;
+    if (!WriteFile(h, buf, (DWORD)count, &written_bytes, &ov)) return -1;
+    return (ssize_t)written_bytes;
 }
 
 #ifdef __cplusplus

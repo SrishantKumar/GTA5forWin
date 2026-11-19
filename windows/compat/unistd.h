@@ -27,6 +27,10 @@ static inline unsigned int sleep(unsigned int seconds) {
     return 0;
 }
 
+static inline int ftruncate(int fd, int64_t length) {
+    return _chsize_s(fd, length) == 0 ? 0 : -1;
+}
+
 #ifndef strcasecmp
 #define strcasecmp _stricmp
 #endif
