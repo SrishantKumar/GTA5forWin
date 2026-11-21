@@ -63,6 +63,7 @@ set(WINDOWS_SOURCES
     windows/WinUI.cpp
     windows/WinNativeUI.cpp
     windows/resources/app.rc
+    windows/resources/app.manifest
     windows/third_party/imgui/imgui.cpp
     windows/third_party/imgui/imgui_draw.cpp
     windows/third_party/imgui/imgui_tables.cpp
