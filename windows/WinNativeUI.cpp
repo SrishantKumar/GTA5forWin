@@ -718,7 +718,6 @@ static void RenderScreenSettings(D2D1_SIZE_F size) {
         // Render Carousel Rows
         for (size_t r = 0; r < gGraphicsRows.size(); ++r) {
             OptionGroup* og = gGraphicsRows[r];
-            D2D1_RECT_F rRow = D2D1::RectF(contentX, curY, contentX + contentW, curY + 32.0f);
             gRenderTarget->DrawText(og->name, (UINT32)wcslen(og->name), gFormatBody.Get(), D2D1::RectF(contentX + 8.0f, curY + 6.0f, contentX + 250.0f, curY + 30.0f), gBrushWhite.Get());
 
             // Carousel control: < Val >
@@ -948,7 +947,11 @@ static void RenderScreenGameFiles(D2D1_SIZE_F size) {
 // ----------------------------------------------------------------------------
 static void RenderProblemModal(D2D1_SIZE_F size) {
     // Dim background
-    gRenderTarget->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.82f));
+    ComPtr<ID2D1SolidColorBrush> dimBrush;
+    gRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.82f), dimBrush.GetAddressOf());
+    if (dimBrush) {
+        gRenderTarget->FillRectangle(D2D1::RectF(0, 0, size.width, size.height), dimBrush.Get());
+    }
 
     float dlgW = (std::min)(size.width * 0.70f, 700.0f);
     float dlgH = (std::min)(size.height * 0.75f, 500.0f);
