@@ -63,7 +63,6 @@ set(WINDOWS_SOURCES
     windows/WinUI.cpp
     windows/WinNativeUI.cpp
     windows/resources/app.rc
-    windows/resources/app.manifest
     windows/third_party/imgui/imgui.cpp
     windows/third_party/imgui/imgui_draw.cpp
     windows/third_party/imgui/imgui_tables.cpp
@@ -178,6 +177,9 @@ if(MSVC)
         /FImsvc_compat.h
         $<$<AND:$<C_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:C>>:/experimental:c11atomics>
     )
+    # Disable default linker-generated manifest to prevent CVT1100 duplicates and corrupt SxS manifests
+    set_target_properties(GTA5Port PROPERTIES LINK_FLAGS "/MANIFEST:NO")
+    target_link_options(GTA5Port PRIVATE "/MANIFEST:NO")
 endif()
 
 message(STATUS "Configured GTA5Port native Direct3D 11 Windows build.")
