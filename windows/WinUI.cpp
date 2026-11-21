@@ -258,6 +258,16 @@ void Init(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context) {
 
     ApplyDarkTheme();
 
+    // High-DPI Font and Style Scaling
+    UINT dpi = GetDpiForWindow(hwnd);
+    float dpiScale = (dpi > 0) ? ((float)dpi / 96.0f) : 1.0f;
+    if (dpiScale > 1.0f) {
+        ImFontConfig fontConfig;
+        fontConfig.SizePixels = 14.0f * dpiScale;
+        io.Fonts->AddFontDefault(&fontConfig);
+        ImGui::GetStyle().ScaleAllSizes(dpiScale);
+    }
+
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(device, context);
 

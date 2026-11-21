@@ -18,6 +18,7 @@
 #include "WinAudio.h"
 #include "WinFiles.h"
 #include "WinUI.h"
+#include "WinWebView.h"
 #include "../app/Source/EngineHost.h"
 
 extern "C" void pg_log(const char *message);
@@ -88,6 +89,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             if (width > 0 && height > 0) {
                 PGResizeD3D11Buffers(width, height);
                 PGSetBackBufferSize(width, height);
+                WinWebView::Resize(width, height);
             }
             return 0;
         }
@@ -105,10 +107,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                 ToggleFullscreen(hwnd);
                 return 0;
             }
+            if (wParam == VK_F1 && WinUI::IsGameRunning()) {
+                WinUI::ToggleOverlay();
+                return 0;
+            }
             break;
         }
 
         case WM_DESTROY: {
+            WinWebView::Shutdown();
             WinUI::Shutdown();
             WinAudioShutdown();
             PostQuitMessage(0);
@@ -206,10 +213,30 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
         return 1;
     }
 
-    int defaultWidth = 1280;
-    int defaultHeight = 800;
+    // 16:9 High-DPI Widescreen Sizing (1600x900 DIPs)
+    UINT dpi = GetDpiForSystem();
+    float scale = (dpi > 0) ? ((float)dpi / 96.0f) : 1.0f;
+    int targetClientW = (int)(1600.0f * scale);
+    int targetClientH = (int)(900.0f * scale);
 
-    RECT rc = { 0, 0, defaultWidth, defaultHeight };
+    // Clamp to 90% of primary monitor work area
+    RECT workArea = {};
+    if (SystemParametersInfoW(SPI_GETWORKAREA, 0, &workArea, 0)) {
+        int maxW = (workArea.right - workArea.left) * 9 / 10;
+        int maxH = (workArea.bottom - workArea.top) * 9 / 10;
+        if (targetClientW > maxW || targetClientH > maxH) {
+            targetClientW = maxW;
+            targetClientH = maxW * 9 / 16;
+            if (targetClientH > maxH) {
+                targetClientH = maxH;
+                targetClientW = maxH * 16 / 9;
+            }
+        }
+    }
+    if (targetClientW < 1280) targetClientW = 1280;
+    if (targetClientH < 720) targetClientH = 720;
+
+    RECT rc = { 0, 0, targetClientW, targetClientH };
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 
     int winWidth = rc.right - rc.left;
@@ -247,13 +274,34 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     PGAttachWindow(hwnd);
     WinAudioStart();
 
-    // Initialize ImGui Native UI layer
+    // Initialize ImGui Native UI layer (fallback & in-game overlay)
     WinUI::Init(hwnd, PGGetD3D11Device(), PGGetD3D11Context());
     WinUI::SetLaunchCallback(OnLaunchGame);
+
+    // Initialize WebView2 UI (1:1 Native Replica of macOS Launcher)
+    bool webViewReady = WinWebView::Init(hwnd, [](const WinWebViewLaunchArgs& args) {
+        WinUIConfig config = WinUI::GetConfig();
+        if (args.mode == "story") {
+            config.startMode = 1;
+        } else if (args.mode == "sandbox") {
+            config.startMode = 2;
+        } else if (args.mode == "performance") {
+            config.startMode = 1;
+            config.graphicsPreset = 0;
+            config.frameLimit = 0;
+        }
+        config.graphicsPreset = args.preset;
+        OnLaunchGame(config);
+    });
 
     WinUI::Log("======================================================================");
     WinUI::Log("  Grand Theft Auto V — Windows Native Port (Direct3D 11)");
     WinUI::Log("  Port by Srishant Kumar (https://github.com/srishantkumar)");
+    if (webViewReady) {
+        WinUI::Log("  UI Engine: Microsoft Edge WebView2 (High-DPI 1:1 Native Replica)");
+    } else {
+        WinUI::Log("  UI Engine: Direct3D 11 / ImGui Native Overlay");
+    }
     WinUI::Log("======================================================================");
 
     ShowWindow(hwnd, nCmdShow);
@@ -268,8 +316,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         } else {
-            if (!WinUI::IsGameRunning()) {
-                // In Launcher Mode: Render Five Star Port Launcher UI
+            if (WinWebView::IsVisible()) {
+                // When WebView2 launcher is visible, yield lightly to save CPU
+                std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            } else if (!WinUI::IsGameRunning()) {
+                // In Launcher Mode without WebView: Render ImGui Launcher Frame
                 WinUI::RenderLauncherFrame(hwnd, PGGetD3D11Context(), PGGetD3D11BackBufferRTV(), PGGetD3D11SwapChain());
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             } else {
@@ -279,6 +330,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
                 lastFrameTime = currentFrameTime;
 
                 WinInputPoll(deltaSec);
+
+                // Render in-game HUD or overlay if open
+                if (WinUI::IsOverlayOpen()) {
+                    WinUI::RenderInGameOverlay(hwnd, PGGetD3D11Context(), PGGetD3D11BackBufferRTV());
+                }
 
                 // Yield slightly
                 std::this_thread::sleep_for(std::chrono::microseconds(500));

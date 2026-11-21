@@ -24,3 +24,6 @@ out/
 *.ilk
 *.obj
 *.exe
+windows/third_party/webview2/
+*.zip
+*.nupkg

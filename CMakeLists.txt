@@ -43,6 +43,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/windows/compat
     ${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/imgui
     ${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/imgui/backends
+    ${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/webview2/build/native/include
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Source
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/simde
     ${CMAKE_CURRENT_SOURCE_DIR}/app/Tools/opus-1.5.2/include
@@ -61,6 +62,8 @@ set(WINDOWS_SOURCES
     windows/WinAudio.cpp
     windows/WinFiles.cpp
     windows/WinUI.cpp
+    windows/WinWebView.cpp
+    windows/resources/app.rc
     windows/third_party/imgui/imgui.cpp
     windows/third_party/imgui/imgui_draw.cpp
     windows/third_party/imgui/imgui_tables.cpp
@@ -171,6 +174,25 @@ if(MSVC)
         /FImsvc_compat.h
         $<$<AND:$<C_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:C>>:/experimental:c11atomics>
     )
+endif()
+
+# Post-build: Copy launcher, assets, and WebView2Loader to target output directory
+if(WIN32)
+    add_custom_command(TARGET GTA5Port POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/windows/launcher"
+            "$<TARGET_FILE_DIR:GTA5Port>/launcher"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/windows/assets"
+            "$<TARGET_FILE_DIR:GTA5Port>/assets"
+    )
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/webview2/build/native/x64/WebView2Loader.dll")
+        add_custom_command(TARGET GTA5Port POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${CMAKE_CURRENT_SOURCE_DIR}/windows/third_party/webview2/build/native/x64/WebView2Loader.dll"
+                "$<TARGET_FILE_DIR:GTA5Port>/WebView2Loader.dll"
+        )
+    endif()
 endif()
 
 message(STATUS "Configured GTA5Port native Direct3D 11 Windows build.")

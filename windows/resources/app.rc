@@ -1,0 +1,4 @@
+#include <windows.h>
+
+// Embed PerMonitorV2 manifest (RT_MANIFEST = 24)
+1 24 "app.manifest"

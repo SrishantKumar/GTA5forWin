@@ -27,7 +27,11 @@ if %ERRORLEVEL% neq 0 (
 :vcfound
 
 echo.
-echo [1/3] Generating stub includes if needed...
+echo [1/3] Setting up dependencies & stubs...
+if not exist "windows\third_party\webview2\build\native\x64\WebView2Loader.dll" (
+    echo [INFO] Fetching WebView2 SDK package...
+    powershell -Command "Invoke-WebRequest -Uri 'https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/1.0.2903.40/microsoft.web.webview2.1.0.2903.40.nupkg' -OutFile 'webview2.zip' -TimeoutSec 120; New-Item -ItemType Directory -Force -Path 'windows/third_party/webview2' | Out-Null; tar -xf webview2.zip -C 'windows/third_party/webview2'; Remove-Item 'webview2.zip' -Force"
+)
 where python >nul 2>&1
 if %ERRORLEVEL% equ 0 (
     if not exist "app\Generated\game.h" (
