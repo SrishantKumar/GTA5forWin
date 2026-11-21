@@ -1,4 +1,15 @@
 #include <windows.h>
+#include "resource.h"
 
-// Embed PerMonitorV2 manifest (RT_MANIFEST = 24)
+// Embed Application PerMonitorV2 Manifest (RT_MANIFEST = 24)
 1 24 "app.manifest"
+
+// Embed High-Resolution Game Artworks & Thumbnails (RCDATA = 10)
+IDR_START_BG     RCDATA "../assets/start-bg.jpg"
+IDR_SETTINGS_BG  RCDATA "../assets/settings-bg.jpg"
+IDR_APP_ICON     RCDATA "../assets/icon.png"
+IDR_CARD_STORY   RCDATA "../assets/card-story.jpg"
+IDR_CARD_SANDBOX RCDATA "../assets/card-sandbox.jpg"
+IDR_CARD_PERF    RCDATA "../assets/card-performance.jpg"
+IDR_CARD_MODS    RCDATA "../assets/card-mods.jpg"
+IDR_CARD_RADIO   RCDATA "../assets/card-radio.jpg"

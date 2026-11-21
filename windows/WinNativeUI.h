@@ -7,29 +7,31 @@
 #endif
 #include <windows.h>
 #include <string>
+#include <vector>
 #include <functional>
 
-struct WinWebViewLaunchArgs {
+struct WinNativeLaunchArgs {
     std::string mode;
     int sandboxMap = 0;
     int preset = 4;
 };
 
-namespace WinWebView {
-    using LaunchHandler = std::function<void(const WinWebViewLaunchArgs&)>;
+namespace WinNativeUI {
+    using LaunchHandler = std::function<void(const WinNativeLaunchArgs&)>;
 
     // Lifecycle
     bool Init(HWND hwnd, LaunchHandler onLaunch);
     void Shutdown();
 
-    // Window Management
+    // Rendering & Frame Update
+    void Render();
+    bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void Resize(int width, int height);
+
+    // Visibility & Overlay
     void SetVisible(bool visible);
     bool IsVisible();
-    bool IsInitialized();
 
-    // Data synchronization
-    void SendFileStatus(bool ready, const std::string& folder, int missingCount, int corruptCount, const std::string& problemsJson);
-    void SendSystemInfo(const std::string& gpu, const std::string& cpu, const std::string& ram);
+    // Data Sync & Directory Scanning
     void RefreshStatus();
 }

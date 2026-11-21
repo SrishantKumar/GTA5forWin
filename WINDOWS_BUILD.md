@@ -136,7 +136,7 @@ YourGameFolder/
 | Layer | macOS Port (`gta5-macos-port`) | Windows Port (`windows/`) |
 |---|---|---|
 | **Language** | Swift 5 + Obj-C / C | Pure C17 & C++20 |
-| **Windowing & UI** | SwiftUI + AppKit | Pure Win32 + Dear ImGui (Direct3D 11 swapchain) |
+| **Windowing & UI** | SwiftUI + AppKit | Pure Win32 + Direct2D / DirectWrite / WIC (1:1 macOS replica) + Dear ImGui in-game overlay |
 | **Graphics** | Apple Metal (`MetalGraphicsHost.mm`) | Direct3D 11 (`WinGraphicsHost.cpp`) |
 | **Input** | `GameController.framework` + `MacCursor.swift` | Win32 Raw Input (`WM_INPUT`) + XInput |
 | **Audio** | `AVFAudio` + `AudioToolbox` | Windows WASAPI (`IAudioClient`) |

@@ -62,17 +62,6 @@ jobs:
             python app/Scripts/stub_asi_natives.py
           }
 
-      - name: Fetch WebView2 SDK
-        shell: pwsh
-        run: |
-          if (-not (Test-Path "windows/third_party/webview2/build/native/x64/WebView2Loader.dll")) {
-            Write-Host "Fetching Microsoft.Web.WebView2 package..."
-            Invoke-WebRequest -Uri "https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/1.0.2903.40/microsoft.web.webview2.1.0.2903.40.nupkg" -OutFile "webview2.zip" -TimeoutSec 120
-            New-Item -ItemType Directory -Force -Path "windows/third_party/webview2" | Out-Null
-            tar -xf webview2.zip -C "windows/third_party/webview2"
-            Remove-Item "webview2.zip" -Force
-          }
-
       - name: Configure CMake
         shell: pwsh
         run: |
@@ -103,12 +92,6 @@ jobs:
           Write-Host "Binary size: $sizeMb MB"
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Copy-Item $bin.FullName -Destination dist\GTA5Port.exe
-          Copy-Item -Path "windows\launcher" -Destination "dist\launcher" -Recurse -Force
-          Copy-Item -Path "windows\assets" -Destination "dist\assets" -Recurse -Force
-          $loader = Get-ChildItem -Path windows -Recurse -Filter "WebView2Loader.dll" | Select-Object -First 1
-          if ($loader) {
-            Copy-Item $loader.FullName -Destination "dist\WebView2Loader.dll" -Force
-          }
           Copy-Item build_win.bat -Destination dist\build_win.bat -ErrorAction SilentlyContinue
           Copy-Item WINDOWS_BUILD.md -Destination dist\README.txt -ErrorAction SilentlyContinue
 

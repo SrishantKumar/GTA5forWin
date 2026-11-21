@@ -18,7 +18,7 @@
 #include "WinAudio.h"
 #include "WinFiles.h"
 #include "WinUI.h"
-#include "WinWebView.h"
+#include "WinNativeUI.h"
 #include "../app/Source/EngineHost.h"
 
 extern "C" void pg_log(const char *message);
@@ -72,24 +72,40 @@ static void ToggleFullscreen(HWND hwnd) {
 }
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    // 1. Process message through ImGui UI layer first
+    // 1. Process message through Pure Native Direct2D UI layer first
+    if (WinNativeUI::ProcessMessage(hwnd, uMsg, wParam, lParam)) {
+        return 0;
+    }
+
+    // 2. Process message through ImGui UI layer (in-game overlay)
     if (WinUI::ProcessMessage(hwnd, uMsg, wParam, lParam)) {
         return 0;
     }
 
-    // 2. Process message through Game Input layer
+    // 3. Process message through Game Input layer
     if (WinInputProcessMessage(hwnd, uMsg, wParam, lParam)) {
         return 0;
     }
 
     switch (uMsg) {
+        case WM_PAINT: {
+            if (WinNativeUI::IsVisible()) {
+                PAINTSTRUCT ps;
+                BeginPaint(hwnd, &ps);
+                WinNativeUI::Render();
+                EndPaint(hwnd, &ps);
+                return 0;
+            }
+            break;
+        }
+
         case WM_SIZE: {
             int width = LOWORD(lParam);
             int height = HIWORD(lParam);
             if (width > 0 && height > 0) {
                 PGResizeD3D11Buffers(width, height);
                 PGSetBackBufferSize(width, height);
-                WinWebView::Resize(width, height);
+                WinNativeUI::Resize(width, height);
             }
             return 0;
         }
@@ -115,7 +131,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         }
 
         case WM_DESTROY: {
-            WinWebView::Shutdown();
+            WinNativeUI::Shutdown();
             WinUI::Shutdown();
             WinAudioShutdown();
             PostQuitMessage(0);
@@ -278,8 +294,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     WinUI::Init(hwnd, PGGetD3D11Device(), PGGetD3D11Context());
     WinUI::SetLaunchCallback(OnLaunchGame);
 
-    // Initialize WebView2 UI (1:1 Native Replica of macOS Launcher)
-    bool webViewReady = WinWebView::Init(hwnd, [](const WinWebViewLaunchArgs& args) {
+    // Initialize Pure Native Direct2D / DirectWrite / WIC UI (1:1 Replica of macOS AppKit Launcher)
+    bool nativeUiReady = WinNativeUI::Init(hwnd, [](const WinNativeLaunchArgs& args) {
         WinUIConfig config = WinUI::GetConfig();
         if (args.mode == "story") {
             config.startMode = 1;
@@ -297,8 +313,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     WinUI::Log("======================================================================");
     WinUI::Log("  Grand Theft Auto V — Windows Native Port (Direct3D 11)");
     WinUI::Log("  Port by Srishant Kumar (https://github.com/srishantkumar)");
-    if (webViewReady) {
-        WinUI::Log("  UI Engine: Microsoft Edge WebView2 (High-DPI 1:1 Native Replica)");
+    if (nativeUiReady) {
+        WinUI::Log("  UI Engine: Direct2D / DirectWrite / WIC (Pure Native C++ 1:1 macOS Replica)");
     } else {
         WinUI::Log("  UI Engine: Direct3D 11 / ImGui Native Overlay");
     }
@@ -316,11 +332,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         } else {
-            if (WinWebView::IsVisible()) {
-                // When WebView2 launcher is visible, yield lightly to save CPU
+            if (WinNativeUI::IsVisible()) {
+                // When Native Direct2D launcher is visible, render and yield lightly
+                WinNativeUI::Render();
                 std::this_thread::sleep_for(std::chrono::milliseconds(16));
             } else if (!WinUI::IsGameRunning()) {
-                // In Launcher Mode without WebView: Render ImGui Launcher Frame
+                // In Launcher Mode without Native UI: Render ImGui Launcher Frame
                 WinUI::RenderLauncherFrame(hwnd, PGGetD3D11Context(), PGGetD3D11BackBufferRTV(), PGGetD3D11SwapChain());
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             } else {
