@@ -143,7 +143,7 @@ static OptionGroup gOptShadows    = { L"Shadows", { L"Preset (Normal)", L"Low", 
 static OptionGroup gOptReflections= { L"Reflections", { L"Preset (High)", L"Normal", L"Very High" }, 0 };
 static OptionGroup gOptDrawDist   = { L"Draw distance", { L"Preset (70%)", L"40%", L"100%" }, 0 };
 static OptionGroup gOptGrass      = { L"Grass", { L"Preset (High)", L"Normal", L"Very High" }, 0 };
-static OptionGroup gOptLanguage   = { L"Language", { L"English (US)", L"Français", L"Deutsch", L"Español", L"Italiano", L"Русский" }, 0 };
+static OptionGroup gOptLanguage   = { L"Language", { L"English (US)", L"Fran\u00E7ais", L"Deutsch", L"Espa\u00F1ol", L"Italiano", L"\u0420\u0443\u0441\u0441\u043A\u0438\u0439" }, 0 };
 static OptionGroup gOptMods       = { L"Enable Mods", { L"On", L"Off" }, 0 };
 static OptionGroup gOptSelfRadio  = { L"Playback Mode", { L"Radio Station", L"Sequential", L"Shuffle" }, 0 };
 
@@ -555,7 +555,7 @@ static void RenderScreenPlay(D2D1_SIZE_F size) {
         gRenderTarget->DrawBitmap(gBmpAppIcon.Get(), D2D1::RectF(heroX, heroY, heroX + 44.0f, heroY + 44.0f));
     }
     gRenderTarget->DrawText(L"GTA V PORT", 10, gFormatNavTabActive.Get(), D2D1::RectF(heroX + 54.0f, heroY, heroX + 300.0f, heroY + 22.0f), gBrushWhite.Get());
-    gRenderTarget->DrawText(L"Fan project · plays your own game files · v1.3", 44, gFormatSub.Get(), D2D1::RectF(heroX + 54.0f, heroY + 22.0f, heroX + 450.0f, heroY + 44.0f), gBrushMuted.Get());
+    gRenderTarget->DrawText(L"Fan project \u00B7 plays your own game files \u00B7 v1.3", 44, gFormatSub.Get(), D2D1::RectF(heroX + 54.0f, heroY + 22.0f, heroX + 450.0f, heroY + 44.0f), gBrushMuted.Get());
 
     // Selected Mode Title
     heroY += 56.0f;
@@ -608,14 +608,14 @@ static void RenderScreenPlay(D2D1_SIZE_F size) {
         gRenderTarget->DrawRoundedRectangle(D2D1::RoundedRect(rBanner, 4.0f, 4.0f), gBrushProblem.Get(), 1.0f);
 
         // Warning symbol
-        gRenderTarget->DrawText(L"⚠", 1, gFormatNavTabActive.Get(), D2D1::RectF(rBanner.left + 12.0f, rBanner.top + 10.0f, rBanner.left + 32.0f, rBanner.bottom), gBrushProblem.Get());
+        gRenderTarget->DrawText(L"\u26A0", 1, gFormatNavTabActive.Get(), D2D1::RectF(rBanner.left + 12.0f, rBanner.top + 10.0f, rBanner.left + 32.0f, rBanner.bottom), gBrushProblem.Get());
         // Banner Text
         gRenderTarget->DrawText(L"Some game files are damaged", 27, gFormatBodySemibold.Get(), D2D1::RectF(rBanner.left + 36.0f, rBanner.top + 4.0f, rBanner.right, rBanner.top + 22.0f), gBrushWhite.Get());
         gRenderTarget->DrawText(L"Found your game folder, but it can't be used yet. Click to see why and how to fix it.", 84, gFormatSub.Get(), D2D1::RectF(rBanner.left + 36.0f, rBanner.top + 22.0f, rBanner.right, rBanner.bottom), gBrushMuted.Get());
     } else {
         gRenderTarget->FillRoundedRectangle(D2D1::RoundedRect(rBanner, 4.0f, 4.0f), gBrushCardBg.Get());
         gRenderTarget->DrawRoundedRectangle(D2D1::RoundedRect(rBanner, 4.0f, 4.0f), gBrushOk.Get(), 1.0f);
-        gRenderTarget->DrawText(L"✓", 1, gFormatNavTabActive.Get(), D2D1::RectF(rBanner.left + 12.0f, rBanner.top + 10.0f, rBanner.left + 32.0f, rBanner.bottom), gBrushOk.Get());
+        gRenderTarget->DrawText(L"\u2713", 1, gFormatNavTabActive.Get(), D2D1::RectF(rBanner.left + 12.0f, rBanner.top + 10.0f, rBanner.left + 32.0f, rBanner.bottom), gBrushOk.Get());
         gRenderTarget->DrawText(L"All game files verified", 23, gFormatBodySemibold.Get(), D2D1::RectF(rBanner.left + 36.0f, rBanner.top + 4.0f, rBanner.right, rBanner.top + 22.0f), gBrushWhite.Get());
         gRenderTarget->DrawText(L"All 21 GB assets present and verified. Ready to launch.", 54, gFormatSub.Get(), D2D1::RectF(rBanner.left + 36.0f, rBanner.top + 22.0f, rBanner.right, rBanner.bottom), gBrushMuted.Get());
     }
@@ -705,7 +705,7 @@ static void RenderScreenSettings(D2D1_SIZE_F size) {
 
             gRenderTarget->DrawText(kPresetNames[p], (UINT32)wcslen(kPresetNames[p]), gFormatBodySemibold.Get(), D2D1::RectF(contentX + 12.0f, curY + 7.0f, contentX + 300.0f, curY + 30.0f), isPActive ? gBrushWhite.Get() : gBrushMuted.Get());
             if (isPActive) {
-                gRenderTarget->DrawText(L"✓", 1, gFormatBodySemibold.Get(), D2D1::RectF(contentX + contentW - 24.0f, curY + 7.0f, contentX + contentW, curY + 30.0f), gBrushOk.Get());
+                gRenderTarget->DrawText(L"\u2713", 1, gFormatBodySemibold.Get(), D2D1::RectF(contentX + contentW - 24.0f, curY + 7.0f, contentX + contentW, curY + 30.0f), gBrushOk.Get());
             }
             curY += 34.0f;
         }
@@ -788,7 +788,7 @@ static void RenderScreenSettings(D2D1_SIZE_F size) {
         // Default text for other tabs
         gRenderTarget->DrawText(kSidebarTabs[gActiveSettingsTab], (UINT32)wcslen(kSidebarTabs[gActiveSettingsTab]), gFormatSectionTitle.Get(), D2D1::RectF(contentX, curY, contentX + 300.0f, curY + 30.0f), gBrushWhite.Get());
         curY += 40.0f;
-        gRenderTarget->DrawText(L"Grand Theft Auto V — Five Star Port for Windows.", 47, gFormatBody.Get(), D2D1::RectF(contentX, curY, contentX + contentW, curY + 24.0f), gBrushMuted.Get());
+        gRenderTarget->DrawText(L"Grand Theft Auto V \u2014 Five Star Port for Windows.", 47, gFormatBody.Get(), D2D1::RectF(contentX, curY, contentX + contentW, curY + 24.0f), gBrushMuted.Get());
     }
 
     // Footer Bar
@@ -880,7 +880,7 @@ static void RenderScreenGameFiles(D2D1_SIZE_F size) {
     if (!valid) {
         gRenderTarget->FillRectangle(rDiag, gBrushCardActiveBg.Get());
         gRenderTarget->DrawRectangle(rDiag, gBrushProblem.Get(), 1.0f);
-        gRenderTarget->DrawText(L"⚠", 1, gFormatNavTabActive.Get(), D2D1::RectF(padX + 12.0f, curY + 10.0f, padX + 32.0f, curY + 34.0f), gBrushProblem.Get());
+        gRenderTarget->DrawText(L"\u26A0", 1, gFormatNavTabActive.Get(), D2D1::RectF(padX + 12.0f, curY + 10.0f, padX + 32.0f, curY + 34.0f), gBrushProblem.Get());
         gRenderTarget->DrawText(L"SOME GAME FILES ARE DAMAGED", 27, gFormatBodySemibold.Get(), D2D1::RectF(padX + 36.0f, curY + 10.0f, padX + bodyW, curY + 30.0f), gBrushWhite.Get());
 
         std::string missingStr = std::to_string(gReport.missingItems.size()) + " files missing or mismatched.";
@@ -895,7 +895,7 @@ static void RenderScreenGameFiles(D2D1_SIZE_F size) {
     } else {
         gRenderTarget->FillRectangle(rDiag, gBrushCardActiveBg.Get());
         gRenderTarget->DrawRectangle(rDiag, gBrushOk.Get(), 1.0f);
-        gRenderTarget->DrawText(L"✓", 1, gFormatNavTabActive.Get(), D2D1::RectF(padX + 12.0f, curY + 10.0f, padX + 32.0f, curY + 34.0f), gBrushOk.Get());
+        gRenderTarget->DrawText(L"\u2713", 1, gFormatNavTabActive.Get(), D2D1::RectF(padX + 12.0f, curY + 10.0f, padX + 32.0f, curY + 34.0f), gBrushOk.Get());
         gRenderTarget->DrawText(L"ALL GAME FILES VERIFIED", 23, gFormatBodySemibold.Get(), D2D1::RectF(padX + 36.0f, curY + 10.0f, padX + bodyW, curY + 30.0f), gBrushWhite.Get());
         gRenderTarget->DrawText(L"Your Grand Theft Auto V installation is complete and ready to run.", 65, gFormatSub.Get(), D2D1::RectF(padX + 36.0f, curY + 32.0f, padX + bodyW, curY + 50.0f), gBrushMuted.Get());
     }
@@ -966,7 +966,7 @@ static void RenderProblemModal(D2D1_SIZE_F size) {
 
     // Close X
     D2D1_RECT_F rClose = D2D1::RectF(dx + dlgW - 36.0f, dy + 8.0f, dx + dlgW - 10.0f, dy + 34.0f);
-    gRenderTarget->DrawText(L"✕", 1, gFormatNavTabActive.Get(), rClose, IsHovered(rClose) ? gBrushWhite.Get() : gBrushDim.Get());
+    gRenderTarget->DrawText(L"\u2715", 1, gFormatNavTabActive.Get(), rClose, IsHovered(rClose) ? gBrushWhite.Get() : gBrushDim.Get());
 
     // Missing Items List
     float listY = dy + 56.0f;
