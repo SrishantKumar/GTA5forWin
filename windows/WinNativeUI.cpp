@@ -1023,14 +1023,28 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     if (!gIsVisible) return false;
 
     switch (uMsg) {
+        case WM_SETCURSOR: {
+            if (LOWORD(lParam) == HTCLIENT) {
+                SetCursor(LoadCursor(nullptr, IDC_ARROW));
+                return true;
+            }
+            return false;
+        }
+
         case WM_MOUSEMOVE: {
-            gMouseX = (float)LOWORD(lParam);
-            gMouseY = (float)HIWORD(lParam);
+            UINT dpi = GetDpiForWindow(hwnd);
+            float scale = (dpi > 0) ? (96.0f / (float)dpi) : 1.0f;
+            gMouseX = (float)(short)LOWORD(lParam) * scale;
+            gMouseY = (float)(short)HIWORD(lParam) * scale;
             InvalidateRect(hwnd, nullptr, FALSE);
             return true;
         }
 
         case WM_LBUTTONDOWN: {
+            UINT dpi = GetDpiForWindow(hwnd);
+            float scale = (dpi > 0) ? (96.0f / (float)dpi) : 1.0f;
+            gMouseX = (float)(short)LOWORD(lParam) * scale;
+            gMouseY = (float)(short)HIWORD(lParam) * scale;
             gMouseDown = true;
             D2D1_SIZE_F size = gRenderTarget ? gRenderTarget->GetSize() : D2D1::SizeF(1600, 900);
 

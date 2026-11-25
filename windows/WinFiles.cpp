@@ -92,9 +92,15 @@ void WinFiles::PrepareEnvironment(const std::string &filesRoot) {
 }
 
 bool WinFiles::PromptChooseGameFolder(HWND hwnd, std::string &outPath) {
+    HRESULT hrCom = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    bool comInited = SUCCEEDED(hrCom);
+
     ComPtr<IFileOpenDialog> pFileOpen;
     HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_ALL, IID_PPV_ARGS(&pFileOpen));
-    if (FAILED(hr)) return false;
+    if (FAILED(hr)) {
+        if (comInited) CoUninitialize();
+        return false;
+    }
 
     FILEOPENDIALOGOPTIONS opt;
     pFileOpen->GetOptions(&opt);
