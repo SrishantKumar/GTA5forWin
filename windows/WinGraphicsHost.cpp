@@ -149,7 +149,9 @@ static bool InitD3D11(HWND hwnd, int width, int height) {
     scd.SampleDesc.Count = 1;
     scd.SampleDesc.Quality = 0;
     scd.Windowed = TRUE;
-    scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    scd.BufferCount = 2;
+    scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
     UINT createFlags = 0;
 #ifdef _DEBUG
@@ -167,8 +169,35 @@ static bool InitD3D11(HWND hwnd, int width, int height) {
     );
 
     if (FAILED(hr)) {
+        // Fallback to legacy DISCARD swap effect if FLIP_DISCARD is unsupported
+        scd.BufferCount = 1;
+        scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+        hr = D3D11CreateDeviceAndSwapChain(
+            nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createFlags,
+            featureLevels, 2, D3D11_SDK_VERSION, &scd,
+            gSwapChain.GetAddressOf(), gDevice.GetAddressOf(),
+            &featureLevel, gContext.GetAddressOf()
+        );
+    }
+    if (FAILED(hr)) {
         pg_log("Failed to create D3D11 device and swapchain.");
         return false;
+    }
+
+    // Log active GPU adapter name
+    ComPtr<IDXGIDevice> dxgiDevice;
+    if (SUCCEEDED(gDevice.As(&dxgiDevice))) {
+        ComPtr<IDXGIAdapter> adapter;
+        if (SUCCEEDED(dxgiDevice->GetAdapter(adapter.GetAddressOf()))) {
+            DXGI_ADAPTER_DESC desc = {};
+            if (SUCCEEDED(adapter->GetDesc(&desc))) {
+                char gpuName[128] = {};
+                WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, gpuName, sizeof(gpuName), nullptr, nullptr);
+                char msg[192];
+                snprintf(msg, sizeof(msg), "D3D11 GPU: %s (VRAM: %llu MB)", gpuName, (unsigned long long)(desc.DedicatedVideoMemory / (1024 * 1024)));
+                pg_log(msg);
+            }
+        }
     }
 
     // Create BackBuffer RenderTargetView
@@ -535,15 +564,20 @@ double PGRenderedFramesPerSecond(void) {
     return gFPS.load();
 }
 
+static std::atomic<int> gSharperUpscaling{0};
+static std::atomic<int> gTextureRatioPct{100};
+
 void PGCaptureNativeFrame(const char *) {}
-void PGSetSharperUpscaling(int) {}
+void PGSetSharperUpscaling(int on) { gSharperUpscaling.store(on ? 1 : 0); }
 void PGSetPresentInterval(double seconds) {
     gPresentInterval.store(seconds);
 }
 void PGShownFrameStats(double *perSecond, double *fastGapMs, double *medianGapMs, uint32_t *notShown) {
-    if (perSecond) *perSecond = gFPS.load();
-    if (fastGapMs) *fastGapMs = 16.6;
-    if (medianGapMs) *medianGapMs = 16.6;
+    double fps = gFPS.load();
+    double ms = gFrameTimeMs.load();
+    if (perSecond) *perSecond = fps;
+    if (fastGapMs) *fastGapMs = ms > 0.0 ? ms : (fps > 0.0 ? 1000.0 / fps : 16.6);
+    if (medianGapMs) *medianGapMs = ms > 0.0 ? ms : (fps > 0.0 ? 1000.0 / fps : 16.6);
     if (notShown) *notShown = 0;
 }
 void PGQueueTestShot(const char *, int, int) {}
@@ -554,9 +588,14 @@ int PGGPUReadsBC(void) {
     return 1; // Windows Direct3D 11 hardware supports BC1-BC7 natively
 }
 int PGTextureRatioPercent(void) {
-    return 100;
+    return gTextureRatioPct.load();
 }
-void PGNoteTextureRatio(int64_t, int64_t) {}
+void PGNoteTextureRatio(int64_t gpuBytes, int64_t gameBytes) {
+    if (gameBytes > 0) {
+        int pct = (int)((gpuBytes * 100) / gameBytes);
+        gTextureRatioPct.store(pct > 0 ? pct : 1);
+    }
+}
 
 ID3D11Device *PGGetD3D11Device(void) { return gDevice.Get(); }
 ID3D11DeviceContext *PGGetD3D11Context(void) { return gContext.Get(); }

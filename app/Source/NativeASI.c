@@ -1,26 +1,168 @@
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include "NativeASI.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-bool pg_asi_init(const PGAsiHost *host) { (void)host; return false; }
+// Native Windows x64 ScriptHookV & ScriptHookVDotNet (.asi) Host
+// Loads native .asi plugins via LoadLibraryA and bridges ScriptHookV exports
+// (scriptRegister, nativeInit/Push64/Call, keyboardHandlerRegister) to PGAsiHost.
+
+#define PG_MAX_ASI_MODULES 64
+#define PG_MAX_SCRIPTS     64
+#define PG_MAX_KEY_HOOKS   32
+
+typedef void (*PGScriptMainFn)(void);
+typedef void (*PGKeyboardFn)(DWORD key, WORD repeats, BYTE scanCode, BOOL isExtended, BOOL isWithAlt, BOOL wasDownBefore, BOOL isUpNow);
+
+static PGAsiHost g_win_host;
+static bool g_win_asi_inited = false;
+static HMODULE g_asi_modules[PG_MAX_ASI_MODULES];
+static int g_asi_module_count = 0;
+
+static PGScriptMainFn g_scripts[PG_MAX_SCRIPTS];
+static int g_script_count = 0;
+
+static PGKeyboardFn g_key_hooks[PG_MAX_KEY_HOOKS];
+static int g_key_hook_count = 0;
+
+static uint8_t g_win_polled_keys[256];
+static uint64_t g_native_hash = 0;
+static uint64_t g_native_args[32];
+static int g_native_argc = 0;
+static uint64_t g_native_ret[3] = {0, 0, 0};
+
+// ScriptHookV exported C ABI for native .asi & ScriptHookVDotNet.asi
+__declspec(dllexport) void scriptRegister(HMODULE module, PGScriptMainFn lpScript) {
+    (void)module;
+    if (lpScript && g_script_count < PG_MAX_SCRIPTS) {
+        g_scripts[g_script_count++] = lpScript;
+    }
+}
+
+__declspec(dllexport) void scriptRegisterAdditionalThread(HMODULE module, PGScriptMainFn lpScript) {
+    scriptRegister(module, lpScript);
+}
+
+__declspec(dllexport) void scriptUnregister(HMODULE module) {
+    (void)module;
+}
+
+__declspec(dllexport) void keyboardHandlerRegister(PGKeyboardFn handler) {
+    if (handler && g_key_hook_count < PG_MAX_KEY_HOOKS) {
+        g_key_hooks[g_key_hook_count++] = handler;
+    }
+}
+
+__declspec(dllexport) void keyboardHandlerUnregister(PGKeyboardFn handler) {
+    for (int i = 0; i < g_key_hook_count; ++i) {
+        if (g_key_hooks[i] == handler) {
+            g_key_hooks[i] = g_key_hooks[--g_key_hook_count];
+            break;
+        }
+    }
+}
+
+__declspec(dllexport) void scriptWait(DWORD time) {
+    if (time > 0) Sleep(time);
+}
+
+__declspec(dllexport) void nativeInit(uint64_t hash) {
+    g_native_hash = hash;
+    g_native_argc = 0;
+}
+
+__declspec(dllexport) void nativePush64(uint64_t val) {
+    if (g_native_argc < 32) {
+        g_native_args[g_native_argc++] = val;
+    }
+}
+
+__declspec(dllexport) uint64_t *nativeCall(void) {
+    g_native_ret[0] = 0;
+    if (g_win_asi_inited && g_win_host.call_native) {
+        g_native_ret[0] = g_win_host.call_native(g_native_hash, g_native_argc, g_native_args);
+    }
+    return g_native_ret;
+}
+
+__declspec(dllexport) uint64_t *getGlobalPtr(int globalId) {
+    if (g_win_asi_inited && g_win_host.memory && globalId >= 0) {
+        return (uint64_t *)(g_win_host.memory + ((uint64_t)globalId * 8));
+    }
+    return NULL;
+}
+
+bool pg_asi_init(const PGAsiHost *host) {
+    if (!host) return false;
+    g_win_host = *host;
+    g_win_asi_inited = true;
+    memset(g_win_polled_keys, 0, sizeof(g_win_polled_keys));
+    return true;
+}
+
 int pg_asi_load(const char *name, const char *root, const uint8_t *bytes, uint64_t length) {
-    (void)name; (void)root; (void)bytes; (void)length;
-    return 0;
+    (void)bytes; (void)length;
+    if (!name || g_asi_module_count >= PG_MAX_ASI_MODULES) return 0;
+
+    char fullPath[MAX_PATH];
+    if (root && root[0]) {
+        snprintf(fullPath, sizeof(fullPath), "%s\\%s", root, name);
+    } else {
+        snprintf(fullPath, sizeof(fullPath), "%s", name);
+    }
+
+    HMODULE mod = LoadLibraryA(fullPath);
+    if (!mod) return 0;
+    g_asi_modules[g_asi_module_count++] = mod;
+    return 1;
 }
-void pg_asi_tick(void) {}
-void pg_asi_key(int virtualKey, bool down) { (void)virtualKey; (void)down; }
-void pg_asi_key_info(PGAsiKeyInfo *info) { if (info) memset(info, 0, sizeof(*info)); }
-bool pg_asi_polled_keys(uint8_t polled[256]) { if (polled) memset(polled, 0, 256); return false; }
+
+void pg_asi_tick(void) {
+    // ponytail: cooperative single-pass tick; upgrade to Win32 fibers (ConvertThreadToFiber) if scripts call scriptWait() in a loop
+    for (int i = 0; i < g_script_count; ++i) {
+        if (g_scripts[i]) g_scripts[i]();
+    }
+}
+
+void pg_asi_key(int virtualKey, bool down) {
+    if (virtualKey >= 0 && virtualKey < 256) {
+        bool wasDown = (g_win_polled_keys[virtualKey] & 0x80) != 0;
+        g_win_polled_keys[virtualKey] = down ? 0x81 : 0x00;
+        for (int i = 0; i < g_key_hook_count; ++i) {
+            if (g_key_hooks[i]) {
+                g_key_hooks[i]((DWORD)virtualKey, 1, 0, FALSE, FALSE, wasDown ? TRUE : FALSE, down ? FALSE : TRUE);
+            }
+        }
+    }
+}
+
+void pg_asi_key_info(PGAsiKeyInfo *info) {
+    if (!info) return;
+    memset(info, 0, sizeof(*info));
+    info->has_keyboard_handler = (g_key_hook_count > 0);
+}
+
+bool pg_asi_polled_keys(uint8_t polled[256]) {
+    if (!polled) return false;
+    memcpy(polled, g_win_polled_keys, 256);
+    return true;
+}
+
 bool pg_asi_module_keys(const char *name, uint8_t polled[256], bool *keyboardHandler) {
-    (void)name; if (polled) memset(polled, 0, 256);
-    if (keyboardHandler) *keyboardHandler = false;
-    return false;
+    (void)name;
+    if (polled) memcpy(polled, g_win_polled_keys, 256);
+    if (keyboardHandler) *keyboardHandler = (g_key_hook_count > 0);
+    return true;
 }
+
 void pg_asi_set_key_remap(const char *module, int modKey, int key) { (void)module; (void)modKey; (void)key; }
 void pg_asi_clear_key_remaps(void) {}
 void pg_asi_stats(uint64_t *us, uint64_t *instructions) {
     if (us) *us = 0;
-    if (instructions) *instructions = 0;
+    if (instructions) *instructions = (uint64_t)g_script_count;
 }
 #else
 // Script Hook V mods (.asi) on iOS (GTA-69): a Windows x64 DLL loader, the Windows and Script Hook V

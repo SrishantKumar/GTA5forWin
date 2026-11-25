@@ -854,7 +854,8 @@ static void RenderModsTab() {
         ImGui::Spacing();
         ImGui::TextColored(ImVec4(0.70f, 0.75f, 0.85f, 1.0f),
             "Drop your GTA V PC mods into the Mods folder:\n"
-            " • Script mods: .asi files (e.g. Simple Trainer, Enhanced Native Trainer)\n"
+            " • Script mods: .asi files (e.g. Simple Trainer, ScriptHookVDotNet.asi)\n"
+            " • .NET scripts: place .dll/.cs scripts in Mods\\scripts\\ with ScriptHookVDotNet.asi\n"
             " • Package mods: .oiv files or unpacked assembly folders\n"
             " • Custom vehicles and peds: .yft / .ytd files\n"
             " • Data files: handling.meta, vehicles.meta, etc.");
