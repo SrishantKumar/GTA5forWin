@@ -92,8 +92,8 @@ jobs:
           Write-Host "Binary size: $sizeMb MB"
           New-Item -ItemType Directory -Force -Path dist | Out-Null
           Copy-Item $bin.FullName -Destination dist\GTA5Port.exe
-          Copy-Item build_win.bat -Destination dist\build_win.bat -ErrorAction SilentlyContinue
-          Copy-Item WINDOWS_BUILD.md -Destination dist\README.txt -ErrorAction SilentlyContinue
+          Copy-Item windows\build_win.bat -Destination dist\build_win.bat -ErrorAction SilentlyContinue
+          Copy-Item windows\WINDOWS_BUILD.md -Destination dist\README.txt -ErrorAction SilentlyContinue
 
       - name: Upload Windows Executable Artifact
         uses: actions/upload-artifact@v4
