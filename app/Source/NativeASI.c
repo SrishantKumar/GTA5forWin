@@ -82,8 +82,19 @@ __declspec(dllexport) void nativePush64(uint64_t val) {
 
 __declspec(dllexport) uint64_t *nativeCall(void) {
     g_native_ret[0] = 0;
-    if (g_win_asi_inited && g_win_host.call_native) {
-        g_native_ret[0] = g_win_host.call_native(g_native_hash, g_native_argc, g_native_args);
+    if (g_win_asi_inited && g_win_host.native && g_win_host.memory && g_win_host.alloc && g_win_host.free) {
+        uint64_t argsGuest = g_native_argc > 0 ? g_win_host.alloc((uint64_t)g_native_argc * 8) : 0;
+        uint64_t resGuest = g_win_host.alloc(24);
+        if (argsGuest && g_native_argc > 0) {
+            memcpy(g_win_host.memory + argsGuest, g_native_args, (size_t)g_native_argc * 8);
+        }
+        if (resGuest) {
+            if (g_win_host.native(g_native_hash, argsGuest, (uint32_t)g_native_argc, resGuest)) {
+                memcpy(g_native_ret, g_win_host.memory + resGuest, sizeof(g_native_ret));
+            }
+            g_win_host.free(resGuest);
+        }
+        if (argsGuest) g_win_host.free(argsGuest);
     }
     return g_native_ret;
 }
@@ -142,7 +153,7 @@ void pg_asi_key(int virtualKey, bool down) {
 void pg_asi_key_info(PGAsiKeyInfo *info) {
     if (!info) return;
     memset(info, 0, sizeof(*info));
-    info->has_keyboard_handler = (g_key_hook_count > 0);
+    info->keyboardHandler = (g_key_hook_count > 0);
 }
 
 bool pg_asi_polled_keys(uint8_t polled[256]) {
