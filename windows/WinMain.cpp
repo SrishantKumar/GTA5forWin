@@ -211,7 +211,7 @@ static void OnLaunchGame(const WinUIConfig& config) {
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     // Enable Per-Monitor High-DPI Awareness
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     // Register Window Class
     const wchar_t CLASS_NAME[] = L"GTA5PortWindowClass";

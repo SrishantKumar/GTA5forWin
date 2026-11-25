@@ -160,7 +160,7 @@ static const wchar_t* kPresetNames[] = {
 
 static const wchar_t* kSidebarTabs[] = {
     L"Graphics", L"Controls", L"Language and saves", L"Game files",
-    L"Mods & patches", L"Self Radio", L"Online", L"This device", L"Credits"
+    L"Mods & patches", L"Self Radio", L"This device", L"Credits"
 };
 
 static const wchar_t* kCardLabels[] = {
@@ -473,17 +473,6 @@ static void RenderScreenPlay(D2D1_SIZE_F size) {
     gRenderTarget->DrawText(L"PLAY", 4, gFormatNavTabActive.Get(), D2D1::RectF(rPlay.left, rPlay.top + 7.0f, rPlay.right, rPlay.bottom), gBrushBlack.Get());
     navX += 86.0f;
 
-    // ONLINE [BETA] Tab
-    D2D1_RECT_F rOnline = D2D1::RectF(navX, topBarY, navX + 110.0f, topBarY + 34.0f);
-    bool hoverOnline = IsHovered(rOnline);
-    gRenderTarget->DrawText(L"ONLINE", 6, gFormatNavTab.Get(), D2D1::RectF(rOnline.left, rOnline.top + 7.0f, rOnline.left + 60.0f, rOnline.bottom), hoverOnline ? gBrushWhite.Get() : gBrushMuted.Get());
-
-    // [BETA] Tag
-    D2D1_RECT_F rBeta = D2D1::RectF(rOnline.left + 64.0f, rOnline.top + 8.0f, rOnline.left + 104.0f, rOnline.top + 26.0f);
-    gRenderTarget->FillRoundedRectangle(D2D1::RoundedRect(rBeta, 2.0f, 2.0f), gBrushGoldBeta.Get());
-    gRenderTarget->DrawText(L"BETA", 4, gFormatKeycap.Get(), D2D1::RectF(rBeta.left, rBeta.top + 2.0f, rBeta.right, rBeta.bottom), gBrushBlack.Get());
-    navX += 122.0f;
-
     // SETTINGS Tab
     D2D1_RECT_F rSettings = D2D1::RectF(navX, topBarY, navX + 90.0f, topBarY + 34.0f);
     bool hoverSettings = IsHovered(rSettings);
@@ -661,9 +650,9 @@ static void RenderScreenSettings(D2D1_SIZE_F size) {
     gRenderTarget->FillRectangle(rSidebar, gBrushCardActiveBg.Get());
     gRenderTarget->DrawLine(D2D1::Point2F(cx + sideW, bodyY), D2D1::Point2F(cx + sideW, bodyY + bodyH), gBrushPanelStroke.Get());
 
-    // Sidebar 9 Tabs
+    // Sidebar 8 Tabs
     float tabH = 38.0f;
-    for (int i = 0; i < 9; ++i) {
+    for (int i = 0; i < 8; ++i) {
         float ty = bodyY + i * tabH;
         D2D1_RECT_F rTab = D2D1::RectF(cx, ty, cx + sideW, ty + tabH);
         bool isActive = (gActiveSettingsTab == i);
@@ -761,7 +750,7 @@ static void RenderScreenSettings(D2D1_SIZE_F size) {
         D2D1_RECT_F rBtnCheck = D2D1::RectF(contentX + 170.0f, curY, contentX + 300.0f, curY + 36.0f);
         gRenderTarget->FillRoundedRectangle(D2D1::RoundedRect(rBtnCheck, 2.0f, 2.0f), IsHovered(rBtnCheck) ? gBrushWhite.Get() : gBrushCardActiveBg.Get());
         gRenderTarget->DrawText(L"CHECK FILES", 11, gFormatBodySemibold.Get(), D2D1::RectF(rBtnCheck.left + 16.0f, rBtnCheck.top + 8.0f, rBtnCheck.right, rBtnCheck.bottom), IsHovered(rBtnCheck) ? gBrushBlack.Get() : gBrushWhite.Get());
-    } else if (gActiveSettingsTab == 7) { // This Device
+    } else if (gActiveSettingsTab == 6) { // This Device
         gRenderTarget->DrawText(L"THIS DEVICE", 11, gFormatSectionTitle.Get(), D2D1::RectF(contentX, curY, contentX + 300.0f, curY + 30.0f), gBrushWhite.Get());
         curY += 40.0f;
 
@@ -899,20 +888,6 @@ static void RenderScreenGameFiles(D2D1_SIZE_F size) {
         gRenderTarget->DrawText(L"Your Grand Theft Auto V installation is complete and ready to run.", 65, gFormatSub.Get(), D2D1::RectF(padX + 36.0f, curY + 32.0f, padX + bodyW, curY + 50.0f), gBrushMuted.Get());
     }
     curY += 114.0f;
-
-    // Recommended Source
-    gRenderTarget->DrawText(L"RECOMMENDED SOURCE", 18, gFormatMicro.Get(), D2D1::RectF(padX, curY, padX + 200.0f, curY + 18.0f), gBrushAccentOrange.Get());
-    gRenderTarget->DrawText(L"dropdrive", 9, gFormatBodySemibold.Get(), D2D1::RectF(padX + bodyW - 80.0f, curY, padX + bodyW, curY + 18.0f), gBrushWhite.Get());
-    curY += 22.0f;
-    gRenderTarget->DrawText(L"The app downloads, unpacks and checks every file for you.", 56, gFormatSub.Get(), D2D1::RectF(padX, curY, padX + bodyW, curY + 20.0f), gBrushMuted.Get());
-    curY += 24.0f;
-
-    D2D1_RECT_F rBtnDrop = D2D1::RectF(padX, curY, padX + bodyW, curY + 38.0f);
-    bool hoverDrop = IsHovered(rBtnDrop);
-    gRenderTarget->FillRoundedRectangle(D2D1::RoundedRect(rBtnDrop, 2.0f, 2.0f), gBrushWhite.Get());
-    gRenderTarget->DrawText(L"DOWNLOAD FROM DROPDRIVE", 23, gFormatNavTabActive.Get(), D2D1::RectF(rBtnDrop.left, rBtnDrop.top + 9.0f, rBtnDrop.right, rBtnDrop.bottom), gBrushBlack.Get());
-    if (hoverDrop) gRenderTarget->DrawRectangle(rBtnDrop, gBrushAccentOrange.Get(), 2.0f);
-    curY += 50.0f;
 
     // Other mirrors
     gRenderTarget->DrawText(L"OTHER DOWNLOAD OPTIONS", 22, gFormatMicro.Get(), D2D1::RectF(padX, curY, padX + bodyW, curY + 18.0f), gBrushDim.Get());
@@ -1068,10 +1043,7 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 if (gMouseY >= 16.0f && gMouseY <= 50.0f) {
                     if (gMouseX >= 36.0f && gMouseX <= 108.0f) {
                         gCurrentScreen = SCREEN_PLAY;
-                    } else if (gMouseX >= 122.0f && gMouseX <= 232.0f) {
-                        gCurrentScreen = SCREEN_SETTINGS;
-                        gActiveSettingsTab = 6; // Online
-                    } else if (gMouseX >= 244.0f && gMouseX <= 334.0f) {
+                    } else if (gMouseX >= 122.0f && gMouseX <= 212.0f) {
                         gCurrentScreen = SCREEN_SETTINGS;
                     }
 
@@ -1159,7 +1131,7 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 float sideW = 240.0f;
                 if (gMouseX >= cx && gMouseX <= cx + sideW && gMouseY >= bodyY && gMouseY <= cy + containerH - 44.0f) {
                     int clickedTab = (int)((gMouseY - bodyY) / 38.0f);
-                    if (clickedTab >= 0 && clickedTab < 9) {
+                    if (clickedTab >= 0 && clickedTab < 8) {
                         gActiveSettingsTab = clickedTab;
                         InvalidateRect(hwnd, nullptr, FALSE);
                         return true;
@@ -1271,14 +1243,6 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     InvalidateRect(hwnd, nullptr, FALSE);
                     return true;
                 }
-
-                // Dropdrive CTA
-                curY += 114.0f + 22.0f + 24.0f;
-                D2D1_RECT_F rBtnDrop = D2D1::RectF(padX, curY, padX + bodyW, curY + 38.0f);
-                if (IsHovered(rBtnDrop)) {
-                    ShellExecuteW(nullptr, L"open", L"https://dropdrive.net", nullptr, nullptr, SW_SHOWNORMAL);
-                    return true;
-                }
             }
 
             InvalidateRect(hwnd, nullptr, FALSE);
@@ -1328,12 +1292,12 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 }
             } else if (gCurrentScreen == SCREEN_SETTINGS) {
                 if (wParam == VK_UP) {
-                    gActiveSettingsTab = (gActiveSettingsTab - 1 + 9) % 9;
+                    gActiveSettingsTab = (gActiveSettingsTab - 1 + 8) % 8;
                     InvalidateRect(hwnd, nullptr, FALSE);
                     return true;
                 }
                 if (wParam == VK_DOWN) {
-                    gActiveSettingsTab = (gActiveSettingsTab + 1) % 9;
+                    gActiveSettingsTab = (gActiveSettingsTab + 1) % 8;
                     InvalidateRect(hwnd, nullptr, FALSE);
                     return true;
                 }
