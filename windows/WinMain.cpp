@@ -32,6 +32,16 @@ static WINDOWPLACEMENT gPrevPlacement = { sizeof(gPrevPlacement) };
 
 static void EngineLogCallback(const char *message, void *) {
     WinUI::Log(message, 3);
+    if (message) {
+        OutputDebugStringA(message);
+        OutputDebugStringA("\n");
+        static std::string logPath = (fs::path(WinFiles::GetAppDataFolder()) / "engine.log").string();
+        FILE *f = fopen(logPath.c_str(), "a");
+        if (f) {
+            fprintf(f, "%s\n", message);
+            fclose(f);
+        }
+    }
 }
 
 static void EnableDarkModeTitleBar(HWND hwnd) {
@@ -199,13 +209,14 @@ static void OnLaunchGame(const WinUIConfig& config) {
     });
     engineThread.detach();
 
+    // Release Direct2D launcher render target so D3D11 has exclusive ownership of hwnd
+    WinNativeUI::Shutdown();
+    PGD3D11Present(0);
+
     WinUI::SetGameRunning(true);
     WinUI::SetOverlayOpen(false);
 
-    // Lock cursor for game input
-    WinInputSetCursorLock(gMainWindow, true);
-
-    WinUI::Log("Game launched successfully. Press [F1] to toggle in-game settings and cheats overlay.");
+    WinUI::Log("Game launched. Press [F1] to toggle in-game settings and log overlay.");
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
