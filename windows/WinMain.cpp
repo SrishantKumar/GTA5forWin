@@ -297,6 +297,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
     // Initialize Pure Native Direct2D / DirectWrite / WIC UI (1:1 Replica of macOS AppKit Launcher)
     bool nativeUiReady = WinNativeUI::Init(hwnd, [](const WinNativeLaunchArgs& args) {
         WinUIConfig config = WinUI::GetConfig();
+        std::string savedFolder = WinFiles::LoadSavedGameFolder();
+        if (!savedFolder.empty()) {
+            config.gameFolder = savedFolder;
+        }
         if (args.mode == "story") {
             config.startMode = 1;
         } else if (args.mode == "sandbox") {
