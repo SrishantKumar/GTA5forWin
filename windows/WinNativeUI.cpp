@@ -53,10 +53,14 @@ enum Screen {
     SCREEN_GAMEFILES = 2
 };
 
+// WM_APP+1: deferred launch posted by PLAY button to escape the WndProc call stack
+#define WM_NATIVEUI_LAUNCH (WM_APP + 1)
+
 static HWND gHwnd = nullptr;
 static WinNativeUI::LaunchHandler gLaunchHandler = nullptr;
 static bool gIsVisible = true;
 static bool gInitialized = false;
+static WinNativeLaunchArgs gPendingLaunchArgs;
 
 // Direct2D / DirectWrite / WIC device resources
 static ComPtr<ID2D1Factory> gD2DFactory;
@@ -1091,12 +1095,11 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 D2D1_RECT_F rPlayCTA = D2D1::RectF(40.0f, heroY, 190.0f, heroY + 44.0f);
                 if (IsHovered(rPlayCTA)) {
                     if (gReport.isValid) {
-                        WinNativeLaunchArgs args;
-                        args.mode = (gSelectedMode == 0) ? "story" : (gSelectedMode == 1 ? "sandbox" : "performance");
-                        args.sandboxMap = gSandboxMap;
-                        args.preset = gActivePreset;
-                        SetVisible(false);
-                        if (gLaunchHandler) gLaunchHandler(args);
+                        gPendingLaunchArgs.mode = (gSelectedMode == 0) ? "story" : (gSelectedMode == 1 ? "sandbox" : "performance");
+                        gPendingLaunchArgs.sandboxMap = gSandboxMap;
+                        gPendingLaunchArgs.preset = gActivePreset;
+                        // Defer launch to escape the WndProc call stack before destroying D2D resources
+                        PostMessageW(hwnd, WM_NATIVEUI_LAUNCH, 0, 0);
                     } else {
                         gCurrentScreen = SCREEN_GAMEFILES;
                     }
@@ -1268,12 +1271,10 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             if (gCurrentScreen == SCREEN_PLAY) {
                 if (wParam == VK_RETURN) {
                     if (gReport.isValid) {
-                        WinNativeLaunchArgs args;
-                        args.mode = (gSelectedMode == 0) ? "story" : (gSelectedMode == 1 ? "sandbox" : "performance");
-                        args.sandboxMap = gSandboxMap;
-                        args.preset = gActivePreset;
-                        SetVisible(false);
-                        if (gLaunchHandler) gLaunchHandler(args);
+                        gPendingLaunchArgs.mode = (gSelectedMode == 0) ? "story" : (gSelectedMode == 1 ? "sandbox" : "performance");
+                        gPendingLaunchArgs.sandboxMap = gSandboxMap;
+                        gPendingLaunchArgs.preset = gActivePreset;
+                        PostMessageW(hwnd, WM_NATIVEUI_LAUNCH, 0, 0);
                     } else {
                         gCurrentScreen = SCREEN_GAMEFILES;
                     }
@@ -1303,6 +1304,17 @@ bool ProcessMessage(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 }
             }
             break;
+        }
+
+        case WM_NATIVEUI_LAUNCH: {
+            // Deferred PLAY — we are now outside the WndProc call stack.
+            // Hide launcher, tear down D2D, then call the launch handler.
+            SetVisible(false);
+            Shutdown();
+            if (gLaunchHandler) {
+                gLaunchHandler(gPendingLaunchArgs);
+            }
+            return true;
         }
     }
     return false;

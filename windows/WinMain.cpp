@@ -209,14 +209,17 @@ static void OnLaunchGame(const WinUIConfig& config) {
     });
     engineThread.detach();
 
-    // Release Direct2D launcher render target so D3D11 has exclusive ownership of hwnd
-    WinNativeUI::Shutdown();
+    // D2D launcher is already shut down by WM_NATIVEUI_LAUNCH before we get here.
+    // Flush the D3D11 swap chain so the first game frame replaces the launcher background.
     PGD3D11Present(0);
 
     WinUI::SetGameRunning(true);
     WinUI::SetOverlayOpen(false);
 
-    WinUI::Log("Game launched. Press [F1] to toggle in-game settings and log overlay.");
+    // Lock cursor for game input after engine thread starts
+    WinInputSetCursorLock(gMainWindow, true);
+
+    WinUI::Log("Game launched. Press [F1] to toggle the in-game overlay, [ESC] to unlock cursor.");
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int nCmdShow) {
